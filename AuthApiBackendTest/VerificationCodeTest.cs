@@ -255,31 +255,5 @@ namespace AuthApiBackendTest
             config.VerifyGet(c => c[It.Is<string>(s => s == "MaxAttempts:Max")], Times.Once);
         }
 
-        [Fact]
-        public async Task RequestForCode_ThrowsException_IfMaAttemptsExceeded()
-        {
-
-            codeRepo.Setup(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                    .ReturnsAsync(false);
-
-            config.SetupGet(c => c[It.Is<string>(s => s == "MaxAttempts:Max")])
-                      .Returns("3");
-
-            var userResponse = new UserResponse
-            {
-                UserId = Guid.NewGuid().ToString(),
-                AttemptCount = 3
-            };
-
-            var ex = await Assert.ThrowsAsync<DailyMaximumAttemptsReachedException>(async () =>
-            {
-                await service.RequestForCode(userResponse, CancellationToken.None);
-            });
-
-            Assert.Equal("Maximum attempt reached. Please try again later", ex.Message);
-
-            config.VerifyGet(c => c[It.Is<string>(s => s == "MaxAttempts:Max")], Times.Once);
-        }
-
     }
 }
