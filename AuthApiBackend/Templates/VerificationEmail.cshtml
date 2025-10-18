@@ -1,0 +1,16 @@
+﻿@model AuthApiBackend.DTOs.TemplatesDto.NotificationDto
+
+<html>
+    <body>
+        <h1>Hello, @Model.Name @Model.Surname</h1>
+        <br />
+        <p>Thank you for signing up, please click "verify me" email to get your login number </p>
+        <p><a href="@Model.VerificationLink">verify me</a></p>
+        
+        <footer>
+            <p>If you encounter any challenges, please contact me by clicking on any of the link below and state your challenges :</p>
+            <p><a href="https://wa.me/+27711626735">Whatsapp me</a></p>
+            <p><a href="mailto:khabanajabulani0@gmail.com">Email me</a></p>
+        </footer>
+    </body>
+</html>

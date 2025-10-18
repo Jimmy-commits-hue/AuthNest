@@ -1,0 +1,73 @@
+name: CI - Build, Test, and Publish Results
+
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: read
+  checks: write
+  pull-requests: write
+
+jobs:
+  build-and-test:
+    name: Build and Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Cache NuGet packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: nuget-${{ runner.os }}-${{ hashFiles('**/*.sln', '**/*.csproj') }}
+          restore-keys: |
+            nuget-${{ runner.os }}-
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+
+      - name: Restore dependencies
+        working-directory: AuthApiBackend
+        run: dotnet restore AuthApiBackend.sln
+
+      - name: Build solution
+        working-directory: AuthApiBackend
+        run: dotnet build AuthApiBackend.sln --configuration Release --no-restore
+
+      - name: Run tests
+        working-directory: AuthApiBackend
+        env:
+          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+          EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
+          JWT_KEY: ${{ secrets.JWT_KEY }}
+        run: |
+          mkdir -p ./TestResults
+          dotnet test AuthApiBackend.sln \
+            --logger "trx;LogFileName=test_results.trx" \
+            --results-directory ./TestResults \
+            --configuration Release \
+            --no-build
+
+      - name: Upload test results artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: AuthApiBackend/TestResults/**/*.trx
+
+      - name: Publish test results to checks
+        if: always()
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: AuthApiBackend/TestResults/**/*.trx
+          check_name: "Unit Tests"

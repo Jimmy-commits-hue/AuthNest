@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36414.22 d17.14
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthApiBackend", "AuthApiBackend.csproj", "{CB28891F-2357-10A9-9FAE-A8F72AA79DA3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AuthApiBackendTest", "..\AuthApiBackendTest\AuthApiBackendTest.csproj", "{570055CA-BB3F-E819-A8FF-0478BDEAF38A}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CB28891F-2357-10A9-9FAE-A8F72AA79DA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CB28891F-2357-10A9-9FAE-A8F72AA79DA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CB28891F-2357-10A9-9FAE-A8F72AA79DA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CB28891F-2357-10A9-9FAE-A8F72AA79DA3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{570055CA-BB3F-E819-A8FF-0478BDEAF38A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{570055CA-BB3F-E819-A8FF-0478BDEAF38A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{570055CA-BB3F-E819-A8FF-0478BDEAF38A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{570055CA-BB3F-E819-A8FF-0478BDEAF38A}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {FC6D0B6B-5EBA-43F5-83E2-E8085BFF5D31}
+	EndGlobalSection
+EndGlobal
