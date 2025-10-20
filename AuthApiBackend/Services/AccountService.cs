@@ -6,33 +6,53 @@ using AuthApiBackend.Utilities;
 
 namespace AuthApiBackend.Services
 {
-    public class AccountService(IAccountRepository accountRepo) : IAccountService
+
+    public class AccountService : IAccountService
     {
+
+        private readonly IAccountRepository accountRepo;
+        private readonly ILogger<AccountService> logger;
+
+        public AccountService(IAccountRepository accountRepo, ILogger<AccountService> logger)
+        {
+
+            this.accountRepo = accountRepo;
+            this.logger = logger;
+
+        }
 
         public async Task CreateAccountAsync(string userId, string password, CancellationToken cancellationToken)
         {
 
-            string? results = await accountRepo.ExistsAsync(userId, cancellationToken);
+            string? results = await accountRepo.GetUserIdAsync(userId, cancellationToken);
 
             if (results is not null)
             {
+
+                logger.LogError("Account for {UserId} already exist", results);
+                
                 throw new AccountAlreadyExistException("Account already exists");
+
             }
 
             var account = new Models.Account
             {
+
                 UserId = userId,
+
                 Password = HashHelper.HashPassword(password),
+
             };
 
             await accountRepo.CreateAsync(account, cancellationToken);
+
         }
 
         public async Task UpdateAccountNumber(string userId, CancellationToken cancellationToken)
         {
-            string? results = await accountRepo.ExistsAsync(userId, cancellationToken) ?? 
-                              throw new NoAccountMatchException("Please register first");
 
+            string results = (await accountRepo.GetUserIdAsync(userId, cancellationToken))!;
+                              
             string? lastAccountNumber = await accountRepo.GetLastAccountNumberAsync(cancellationToken);
 
             var number = GenerateCode.GenerateAccountNumber(lastAccountNumber);
@@ -43,12 +63,18 @@ namespace AuthApiBackend.Services
 
         public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken)
         {
+
             return await accountRepo.GetPendingAccounts(cancellationToken);
+
         }
 
         public async Task UpdateIsEmailSent(string accountId,CancellationToken cancellationToken)
         {
+
             await accountRepo.UpdateIsEmailSentStatus(accountId, cancellationToken);
+
         }
+
     }
+
 }

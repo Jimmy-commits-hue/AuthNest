@@ -7,7 +7,7 @@ namespace AuthApiBackend.Interfaces.IRepositories
     {
         Task CreateAsync(Account account, CancellationToken cancellationToken);
 
-        Task<string?> ExistsAsync(string userId, CancellationToken cancellationToken);
+        Task<string?> GetUserIdAsync(string userId, CancellationToken cancellationToken);
 
         Task UpdateAccountAsync(string userId, string accountNumber, CancellationToken cancellationToken);
 

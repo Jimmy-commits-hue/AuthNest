@@ -22,7 +22,7 @@ namespace AuthApiBackend.Controllers.v2
 
             await roleService.CreateRoleAsync(role, cancellationToken);
 
-            return Ok();
+            return Created();
         }
     }
 }

@@ -10,7 +10,7 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task UpdateAsync(Role role, CancellationToken cancellationToken);
 
-       Task<IEnumerable<Role>> GetAllAsync(CancellationToken cancellationToken);
+       //Task<IEnumerable<Role>> GetAllAsync(CancellationToken cancellationToken);
 
         Task<int?> GetAsync(string role, CancellationToken cancellationToken);
 

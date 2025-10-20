@@ -26,11 +26,6 @@ namespace AuthApiBackend.Repositories
 
         }
 
-        public async Task<IEnumerable<Role>> GetAllAsync(CancellationToken cancellationToken)
-        {
-            throw new NotImplementedException();
-        }
-
         public async Task UpdateAsync(Role role, CancellationToken cancellationToken)
         {
 

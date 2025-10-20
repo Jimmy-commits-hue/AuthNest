@@ -3,23 +3,34 @@ using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Caching.Distributed;
+using System.Text;
 
 namespace AuthApiBackend.Repositories
 {
-    public class AccountRepository(AuthApiDbContext db) : IAccountRepository
+    public class AccountRepository : IAccountRepository
     {
+
+        private readonly AuthApiDbContext db;
+        public AccountRepository(AuthApiDbContext db, IDistributedCache cache)
+        {
+            this.db = db;
+        }
 
         public async Task CreateAsync(Account account, CancellationToken cancellationToken)
         {
             db.Account.Add(account);
+
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<string?> ExistsAsync(string userId, CancellationToken cancellationToken)
+        public async Task<string?> GetUserIdAsync(string userId, CancellationToken cancellationToken)
         {
+
             return await db.Account.Where(c => userId.CompareTo(c.UserId) == 0).AsNoTracking().Select(c => c.UserId).
                          FirstOrDefaultAsync(cancellationToken);
         }
+
         public async Task UpdateAccountAsync(string userId, string accountNumber, CancellationToken cancellationToken)
         {
 
@@ -46,6 +57,7 @@ namespace AuthApiBackend.Repositories
             return await db.Account.Where(a => a.AccountNumber.StartsWith(currentYearPrefix))
                 .OrderByDescending(a => a.AccountNumber).Select(a => a.AccountNumber)
                 .FirstOrDefaultAsync(cancellationToken);
+
         }
 
         public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken)
@@ -58,7 +70,6 @@ namespace AuthApiBackend.Repositories
                                 Email = p.User.ContactDetails!.Email,
                                 AccountId = p.UserId
                             }).ToListAsync(cancellationToken);
-
         }
 
         public async Task UpdateIsEmailSentStatus(string accountId, CancellationToken cancellationToken)
@@ -73,5 +84,7 @@ namespace AuthApiBackend.Repositories
 
             await db.SaveChangesAsync(cancellationToken);
         }
+
     }
+
 }

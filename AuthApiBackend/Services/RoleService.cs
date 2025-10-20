@@ -35,14 +35,6 @@ namespace AuthApiBackend.Services
         }
 
         //not complete
-        public async Task<IEnumerable<Role>> GetAllRolesAsync(CancellationToken cancellationToken)
-        {
-
-            return await roleRepo.GetAllAsync(cancellationToken);
-
-        } 
-
-        //not complete
         public async Task UpdateRoleAsync(string role, string newRole, CancellationToken cancellationToken)
         {
 

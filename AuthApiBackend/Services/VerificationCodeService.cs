@@ -33,7 +33,7 @@ namespace AuthApiBackend.Services
             {
                 throw new NoCodeMatchException("Invalid code");
             }
-            if (existingCode.IsExpired)
+            if (existingCode.IsExpired == true)
             {
                 await UpdateCodeAsync(codeId, cancellationToken);
 
