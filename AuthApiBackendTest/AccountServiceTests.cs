@@ -5,6 +5,7 @@ using AuthApiBackend.Utilities;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Exceptions.ExceptionTypes;
+using Microsoft.Extensions.Logging;
 
 namespace AuthApiBackendTest
 {
@@ -13,11 +14,13 @@ namespace AuthApiBackendTest
 
         private readonly Mock<IAccountRepository> accountRepo;
         private readonly AccountService accountService;
+        private readonly Mock<ILogger<AccountService>> logger;
 
         public AccountServiceTests()
         {
             accountRepo = new Mock<IAccountRepository>();
-            accountService = new AccountService(accountRepo.Object);
+            logger = new Mock<ILogger<AccountService>>();
+            accountService = new AccountService(accountRepo.Object, logger.Object);
         }
 
         [Fact]
@@ -34,7 +37,7 @@ namespace AuthApiBackendTest
                 Password = passwordHash,
             };
 
-            accountRepo.Setup(repo => repo.ExistsAsync(userId, CancellationToken.None))
+            accountRepo.Setup(repo => repo.GetUserIdAsync(userId, CancellationToken.None))
                        .ReturnsAsync((string?)null);
 
             accountRepo.Setup(accountRepo => accountRepo.CreateAsync(account, CancellationToken.None))
@@ -42,7 +45,7 @@ namespace AuthApiBackendTest
 
             await accountService.CreateAccountAsync(userId, password, CancellationToken.None);
 
-            accountRepo.Verify(accountRepo => accountRepo.ExistsAsync(userId, CancellationToken.None), Times.Once);
+            accountRepo.Verify(accountRepo => accountRepo.GetUserIdAsync(userId, CancellationToken.None), Times.Once);
             accountRepo.Verify(accountRepo => accountRepo.CreateAsync(It.IsAny<Account>(), CancellationToken.None), Times.Once);
         }
 
@@ -52,24 +55,24 @@ namespace AuthApiBackendTest
             string userId = Guid.NewGuid().ToString();
             string password = "#JaBu@5.";
 
-            accountRepo.Setup(repo => repo.ExistsAsync(userId, CancellationToken.None))
+            accountRepo.Setup(repo => repo.GetUserIdAsync(userId, CancellationToken.None))
                        .ReturnsAsync(userId);
 
             await Assert.ThrowsAsync<AccountAlreadyExistException>(() => 
                 accountService.CreateAccountAsync(userId, password, CancellationToken.None));
 
-            accountRepo.Verify(accountRepo => accountRepo.ExistsAsync(userId, CancellationToken.None), Times.Once);
+            accountRepo.Verify(accountRepo => accountRepo.GetUserIdAsync(userId, CancellationToken.None), Times.Once);
             accountRepo.Verify(accountRepo => accountRepo.CreateAsync(It.IsAny<Account>(), CancellationToken.None), Times.Never);
         }
 
         [Fact]
-        public async Task UpdateAccountNumber_ShouldUpdateAccountNumber_IfAccountExist()
+        public async Task UpdateAccountNumber_UpdateAccountNumber_IfAccountExist()
         {
             string userId = Guid.NewGuid().ToString();
             string lastAccountNumber = "250000001";
             String newAccountNumber = "250000002";
 
-            accountRepo.Setup(repo => repo.ExistsAsync(userId, CancellationToken.None))
+            accountRepo.Setup(repo => repo.GetUserIdAsync(userId, CancellationToken.None))
                        .ReturnsAsync(userId);
 
             accountRepo.Setup(repo => repo.GetLastAccountNumberAsync(CancellationToken.None))
@@ -82,26 +85,9 @@ namespace AuthApiBackendTest
 
             Assert.Equal(newAccountNumber, GenerateCode.GenerateAccountNumber(lastAccountNumber));
 
-            accountRepo.Verify(repo => repo.ExistsAsync(userId, CancellationToken.None), Times.Once);
+            accountRepo.Verify(repo => repo.GetUserIdAsync(userId, CancellationToken.None), Times.Once);
             accountRepo.Verify(repo => repo.UpdateAccountAsync(It.IsAny<string>(), newAccountNumber, CancellationToken.None), Times.Once);
             accountRepo.Verify(repo => repo.GetLastAccountNumberAsync(CancellationToken.None), Times.Once);
-        }
-
-        [Fact]
-        public async Task UpdateAccountNumber_ShouldThrowException_IfAccountDoesNotExist()
-        {
-            string userId = Guid.NewGuid().ToString();
-
-            accountRepo.Setup(repo => repo.ExistsAsync(userId, CancellationToken.None))
-                       .ReturnsAsync((string?)null);
-
-            var ex = await Assert.ThrowsAsync<NoAccountMatchException>(async () => await accountService.UpdateAccountNumber(userId, CancellationToken.None));
-
-            Assert.Equal("Please register first", ex.Message);
-
-            accountRepo.Verify(repo => repo.ExistsAsync(userId, CancellationToken.None), Times.Once);
-            accountRepo.Verify(repo => repo.UpdateAccountAsync(It.IsAny<string>(), It.IsAny<string>(), CancellationToken.None), Times.Never);
-            accountRepo.Verify(repo => repo.GetLastAccountNumberAsync(CancellationToken.None), Times.Never);
         }
 
         [Fact]

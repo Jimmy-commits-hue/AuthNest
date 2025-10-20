@@ -2,13 +2,29 @@ using AuthApiBackend.Configurations;
 using AuthApiBackend.Controllers.v1;
 using AuthApiBackend.Controllers.v2;
 using AuthApiBackend.Database;
+using AuthApiBackend.Exceptions;
 using AuthApiBackend.RegisterServices;
 using DotNetEnv;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.VisualBasic;
+using Serilog;
+using Serilog.Events;
 using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
+    builder.Host.UseSerilog((context, services, config) =>
+    {
+        try
+        {
+            config.ReadFrom.Configuration(context.Configuration).
+            Enrich.FromLogContext().WriteTo.Seq("http://localhost:5341", restrictedToMinimumLevel:LogEventLevel.Information);
+        }catch(Exception ex)
+        {
+           Console.WriteLine(ex.Message);
+        }
+    });
 
 builder.Services.AddControllers();
 
@@ -42,6 +58,17 @@ builder.Services.Configure<MaxAttemptsConfig>(builder.Configuration.GetSection("
 
 builder.Services.AddDbContext<AuthApiDbContext>();
 
+RedisConfig redisConfig = builder.Configuration.GetSection("Redis").Get<RedisConfig>()!;
+
+builder.Services.AddStackExchangeRedisCache(options =>
+{
+    options.Configuration = redisConfig.Configuration;
+    options.InstanceName = redisConfig.InstanceName;
+});
+
+builder.Services.AddSingleton<IExceptionHandler, ExceptionsGlobalHandler>();
+builder.Services.AddSingleton<IExceptionHandler, UnknownExceptionHandler>();
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
@@ -54,6 +81,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 
+app.UseExceptionHandler(_ => { });
 app.UseHttpsRedirection();
 
 app.UseAuthorization();

@@ -15,7 +15,6 @@ namespace AuthApiBackend.Repositories
             context.User.Add(user);
             await context.SaveChangesAsync(cancellationToken);
 
-
         }
 
         
