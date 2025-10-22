@@ -12,7 +12,7 @@ namespace AuthApiBackend.Repositories
     {
 
         private readonly AuthApiDbContext db;
-        public AccountRepository(AuthApiDbContext db, IDistributedCache cache)
+        public AccountRepository(AuthApiDbContext db)
         {
             this.db = db;
         }

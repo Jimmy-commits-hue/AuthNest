@@ -3,7 +3,7 @@
 
     public class MaxAttemptsConfig
     {
-        public int MaxAttempts { get; set; }
+        public string MaxAttempts { get; set; } = null!;
 
     }
 

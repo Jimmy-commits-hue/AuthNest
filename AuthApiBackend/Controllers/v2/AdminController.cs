@@ -3,7 +3,7 @@ using AuthApiBackend.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace AuthApiBackend.Controllers.v2
+namespace AuthApiBackend.Controllers.V2
 {
 
     [Route("api/v{version:apiversion}[controller]")]

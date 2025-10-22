@@ -1,8 +1,12 @@
-﻿using AuthApiBackend.Interfaces.IRepositories;
+﻿using AuthApiBackend.Controllers.V1;
+using AuthApiBackend.Controllers.V2;
+using AuthApiBackend.Controllers.V3;
+using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Repositories;
 using AuthApiBackend.Services;
+using Microsoft.AspNetCore.Mvc.Versioning;
 
 namespace AuthApiBackend.RegisterServices
 {
@@ -38,6 +42,24 @@ namespace AuthApiBackend.RegisterServices
             //HttpContextAccessor Service
             Services.AddHttpContextAccessor();
 
+            //api versionning Service
+            Services.AddApiVersioning(options =>
+            {
+                options.DefaultApiVersion = new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0);
+                options.AssumeDefaultVersionWhenUnspecified = true;
+                options.ReportApiVersions = true;
+                options.ApiVersionReader = new UrlSegmentApiVersionReader();
+
+                options.Conventions.Controller<HomeController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0));
+                options.Conventions.Controller<AdminController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(2, 0));
+                options.Conventions.Controller<UserController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(3, 0));
+            });
+
+            Services.AddVersionedApiExplorer(options =>
+            {
+                options.GroupNameFormat = "'v'VVV";
+                options.SubstituteApiVersionInUrl = true;
+            });
 
             return Services;
             
