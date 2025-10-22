@@ -1,14 +1,21 @@
 ﻿using AuthApiBackend.Configurations;
 using AuthApiBackend.DTOs;
+using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Options;
 using Serilog.Context;
+using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.v1
 {
+    [Route("api/v{version:apiVersion}/[controller]")]
+    [ApiController]
 
-    public class HomeController : Controller
+    public class HomeController : ControllerBase
     {
 
         private readonly IUserService userService;
@@ -18,7 +25,7 @@ namespace AuthApiBackend.Controllers.v1
         private readonly IVerificationCodeService codeService;
         private readonly IAccountService accountService;
         private readonly MaxAttemptsConfig maxAttempts;
-        private readonly ILogger<HomeController> logger;    
+        private readonly ILogger<HomeController> logger;
 
         public HomeController(IUserService userService, IContactDetailsService contactService, IRoleService roleService,
             IUserRoleService userRoleService, IVerificationCodeService codeService, IAccountService accountService
@@ -87,6 +94,31 @@ namespace AuthApiBackend.Controllers.v1
 
         }
 
+        [HttpGet("login")]
+        public IActionResult Login()
+        {
+            
+            return Challenge(new AuthenticationProperties { RedirectUri = "/api/v1/home/google-callback" },
+                             GoogleDefaults.AuthenticationScheme);
+
+        }
+
+        [Authorize]
+        [HttpGet("google-callback")]
+        public IActionResult GetUserInfo()
+        {
+            
+            var googleUser = new GoogleResponse
+            {
+                Surname = User.FindFirstValue(ClaimTypes.Surname),
+                GivenName = User.FindFirstValue(ClaimTypes.GivenName),
+                Email = User.FindFirstValue(ClaimTypes.Email)!
+            };
+
+            return Ok(googleUser);
+
+        }
+
         [HttpPost("resend-code")]
         public async Task<IActionResult> ResendCode([FromBody] string idNumber, CancellationToken cancellationToken)
         {
@@ -109,3 +141,4 @@ namespace AuthApiBackend.Controllers.v1
     }
 
 }
+

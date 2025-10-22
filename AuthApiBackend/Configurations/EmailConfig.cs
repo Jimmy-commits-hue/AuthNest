@@ -1,5 +1,6 @@
 ﻿namespace AuthApiBackend.Configurations
 {
+
     public class EmailConfig
     {
 
@@ -8,4 +9,5 @@
         public string Port { get; set; } = null!;
         
     }
+
 }
