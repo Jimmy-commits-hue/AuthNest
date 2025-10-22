@@ -3,10 +3,6 @@ using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.Storage;
-using Microsoft.Extensions.Caching.Distributed;
-using StackExchange.Redis;
-using System.Text.Json;
 
 namespace AuthApiBackend.Repositories
 {
@@ -14,13 +10,10 @@ namespace AuthApiBackend.Repositories
     {
 
         private readonly AuthApiDbContext db;
-        //private readonly IDistributedCache cache;
-       
 
-        public VerificationCodeRepo(AuthApiDbContext db, IDistributedCache cache)
+        public VerificationCodeRepo(AuthApiDbContext db)
         {
             this.db = db;
-          //  this.cache = cache;
            
         }
 
@@ -29,30 +22,11 @@ namespace AuthApiBackend.Repositories
             db.VerificationCode.Add(code);
             await db.SaveChangesAsync(cancellationToken);
 
-           /* await cache.SetStringAsync(code.Id, JsonSerializer.Serialize(new VerificationResponse { Code = code.Code
-            , IsExpired = code.IsExpired, UserId = code.ContactDetails.User.Id}), new DistributedCacheEntryOptions
-            {
-                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(10)
-            }, cancellationToken);
-
-            await database.ListLeftPushAsync("PendingCodes", JsonSerializer.Serialize(new PendingCode
-            {
-                Id = code.Id,
-                Code = code.Code,
-                Email = code.ContactDetails.Email,
-                FirstName = code.ContactDetails.User.FirstName,
-                Surname = code.ContactDetails.User.Surname
-            }));*/
+   
         }
 
         public async Task<VerificationResponse?> GetAsync(string codeId, CancellationToken cancellationToken)
         {
-            /*var code = await cache.GetStringAsync(codeId, cancellationToken);
-
-            if (!string.IsNullOrEmpty(code))
-            {
-                return JsonSerializer.Deserialize<VerificationResponse>(code);
-            }*/
 
             return await db.VerificationCode.Where(c => c.Id == codeId).OrderByDescending(c => c.AttemptCount).
                          AsNoTracking().Select(c => new VerificationResponse{ Code = c.Code, IsExpired = c.IsExpired, 
@@ -62,13 +36,6 @@ namespace AuthApiBackend.Repositories
 
         public async Task<IEnumerable<PendingCode>?> GetPendingCodes(CancellationToken cancellationToken)
         {
-
-            /*var pendingCodes = await database.ListLeftPopAsync("PendingCodes");
-
-            if (!string.IsNullOrEmpty(pendingCodes))
-            {
-                return JsonSerializer.Deserialize<IEnumerable<PendingCode>>(pendingCodes!);
-            }*/
 
             return await db.VerificationCode.
                     Where(v => v.IsActive == true && !v.IsEmailSent).AsNoTracking().Select(v => new PendingCode{ Code = v.Code, Id = v.Id,

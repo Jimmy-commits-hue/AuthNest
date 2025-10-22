@@ -10,7 +10,7 @@ using Microsoft.Extensions.Options;
 using Serilog.Context;
 using System.Security.Claims;
 
-namespace AuthApiBackend.Controllers.v1
+namespace AuthApiBackend.Controllers.V1
 {
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
@@ -94,7 +94,7 @@ namespace AuthApiBackend.Controllers.v1
 
         }
 
-        [HttpGet("login")]
+        [HttpGet("googleRegistration")]
         public IActionResult Login()
         {
             
@@ -136,6 +136,13 @@ namespace AuthApiBackend.Controllers.v1
 
             return Ok(new { Message = "A new code has been sent to your email." });
 
+        }
+
+        [HttpPost("login")]
+        public IActionResult LoginFrom([FromBody] LoginDto user)
+        {
+
+            return Ok("Logged in Successfully");
         }
 
     }
