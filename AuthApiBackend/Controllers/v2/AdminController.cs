@@ -2,11 +2,15 @@
 using AuthApiBackend.Interfaces.IServices;
 using Microsoft.AspNetCore.Mvc;
 
+
 namespace AuthApiBackend.Controllers.v2
 {
-    public class AdminController : Controller
+
+    [Route("api/v{version:apiversion}[controller]")]
+    [ApiController]
+    public class AdminController : ControllerBase
     {
-        
+
         private readonly IRoleService roleService;
 
         public AdminController(IRoleService roleService)
@@ -23,6 +27,10 @@ namespace AuthApiBackend.Controllers.v2
             await roleService.CreateRoleAsync(role, cancellationToken);
 
             return Created();
+
         }
+
     }
+
 }
+
