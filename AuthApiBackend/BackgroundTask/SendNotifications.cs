@@ -1,6 +1,7 @@
 ﻿using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
+using AuthApiBackend.Utilities;
 using Serilog.Context;
 
 namespace AuthApiBackend.BackgroundTask
@@ -60,7 +61,8 @@ namespace AuthApiBackend.BackgroundTask
                                         Subject = "Your Verification Code",
                                         Surname = pendingCode.First().Surname,
                                         VerificationType = Enums.NotificationType.Verification.ToString(),
-                                        VerificationLink = string.Empty,
+                                        VerificationLink = $"https://localhost:7123/api/v1/home/verify?CodeId={pendingCode.First().Id}",
+                                        VerificationCode = EncryptData.Decrypt(pendingCode.First().Code),
                                         TemplateName = "VerificationEmail.cshtml",
 
                                     };

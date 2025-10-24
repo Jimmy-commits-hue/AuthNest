@@ -29,7 +29,7 @@ namespace AuthApiBackendTest
             string userId = Guid.NewGuid().ToString();
             string password = "#JaBu@5.";
 
-            string passwordHash = HashHelper.HashPassword(password);
+            string passwordHash = HashHelper.Hash(password);
             
             var account = new Account
             {

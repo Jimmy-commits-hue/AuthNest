@@ -1,4 +1,5 @@
-﻿using AuthApiBackend.DTOs.ResponseDtos;
+﻿using AuthApiBackend.DTOs;
+using AuthApiBackend.DTOs.ResponseDtos;
 
 namespace AuthApiBackend.Interfaces.IServices
 {
@@ -11,5 +12,7 @@ namespace AuthApiBackend.Interfaces.IServices
         Task <IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken);
 
         Task UpdateIsEmailSent(string accountId, CancellationToken cancellationToken);
+
+        Task VerifyLoginDetails(LoginDto loginDetails, CancellationToken cancellationToken);
     }
 }
