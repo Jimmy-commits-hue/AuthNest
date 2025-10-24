@@ -46,7 +46,7 @@ jobs:
       - name: Run tests
         working-directory: AuthApiBackend
         env:
-          DB_CONNECTION: ${{ secrets.DB_CONNECTION }}
+          AES_KEY: ${{ secrets.AES_KEY }}
           FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
           EMAIL_PASSWORD: ${{ secrets.EMAIL_PASSWORD }}
           JWT_KEY: ${{ secrets.JWT_KEY }}
