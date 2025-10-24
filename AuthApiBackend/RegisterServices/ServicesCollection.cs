@@ -7,6 +7,7 @@ using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Repositories;
 using AuthApiBackend.Services;
 using Microsoft.AspNetCore.Mvc.Versioning;
+using Microsoft.AspNetCore.Mvc.Versioning.Conventions;
 
 namespace AuthApiBackend.RegisterServices
 {
@@ -50,9 +51,9 @@ namespace AuthApiBackend.RegisterServices
                 options.ReportApiVersions = true;
                 options.ApiVersionReader = new UrlSegmentApiVersionReader();
 
-                options.Conventions.Controller<HomeController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(1, 0));
-                options.Conventions.Controller<AdminController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(2, 0));
-                options.Conventions.Controller<UserController>().HasApiVersion(new Microsoft.AspNetCore.Mvc.ApiVersion(3, 0));
+                options.Conventions.Controller<HomeController>().HasApiVersion(1, 0);
+                options.Conventions.Controller<AdminController>().HasApiVersion(2, 0);
+                options.Conventions.Controller<UserController>().HasApiVersion(3, 0);
             });
 
             Services.AddVersionedApiExplorer(options =>

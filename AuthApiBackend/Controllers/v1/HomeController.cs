@@ -139,7 +139,7 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("login")]
-        public IActionResult LoginFrom([FromBody] LoginDto user)
+        public async Task<IActionResult> LoginFrom([FromBody] LoginDto user)
         {
 
             return Ok("Logged in Successfully");

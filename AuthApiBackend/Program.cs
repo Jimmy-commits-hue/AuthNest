@@ -8,6 +8,9 @@ using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Serilog;
 using Serilog.Events;
 
+Env.Load();
+
+Console.WriteLine(Environment.GetEnvironmentVariable("KEY"));
 var builder = WebApplication.CreateBuilder(args);
 
 Log.Logger = new LoggerConfiguration()
@@ -17,8 +20,6 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-
-    Env.Load();
 
     builder.Host.UseSerilog((context, services, config) =>
     {

@@ -16,5 +16,7 @@ namespace AuthApiBackend.Interfaces.IRepositories
         Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken);
 
         Task UpdateIsEmailSentStatus(string accountId, CancellationToken cancellationToken);
+
+        Task<string?> GetUserLoginDetails(string accountNumber, CancellationToken cancellationToken);
     }
 }

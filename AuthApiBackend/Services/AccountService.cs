@@ -1,8 +1,10 @@
-﻿using AuthApiBackend.DTOs.ResponseDtos;
+﻿using AuthApiBackend.DTOs;
+using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Exceptions.ExceptionTypes;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Utilities;
+using Microsoft.AspNetCore.Identity;
 
 namespace AuthApiBackend.Services
 {
@@ -40,7 +42,7 @@ namespace AuthApiBackend.Services
 
                 UserId = userId,
 
-                Password = HashHelper.HashPassword(password),
+                Password = HashHelper.Hash(password),
 
             };
 
@@ -74,6 +76,23 @@ namespace AuthApiBackend.Services
             await accountRepo.UpdateIsEmailSentStatus(accountId, cancellationToken);
 
         }
+
+        public async Task VerifyLoginDetails(LoginDto loginDetails, CancellationToken cancellationToken)
+        {
+
+            var getPassword = await accountRepo.GetUserLoginDetails(loginDetails.LoginNumber, cancellationToken) ??
+                         throw new UserNotFoundException("Please Register first");
+
+            PasswordVerificationResult verifyPassword = HashHelper.VerifyHash(getPassword, loginDetails.Password);
+
+            if(verifyPassword is PasswordVerificationResult.Failed)
+            {
+                throw new InvalidCredentialsException("Invalid Password or Account number");
+            }
+
+        }
+
+
 
     }
 

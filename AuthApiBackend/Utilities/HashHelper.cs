@@ -24,7 +24,7 @@ namespace AuthApiBackend.Utilities
 
         }
 
-        public static string HashPassword(string password)
+        public static string Hash(string password)
         {
 
             return new PasswordHasher<string>().HashPassword(Environment.GetEnvironmentVariable("SECRET_KEY")!
@@ -32,7 +32,7 @@ namespace AuthApiBackend.Utilities
 
         }
 
-        public static PasswordVerificationResult VerifyHashPassword(string hashedPassword, string password)
+        public static PasswordVerificationResult VerifyHash(string hashedPassword, string password)
         {
 
             return new PasswordHasher<string>().VerifyHashedPassword(Environment.GetEnvironmentVariable("SECRET_KEY")!

@@ -85,6 +85,14 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
+        public async Task<string?> GetUserLoginDetails(string accountNumber, CancellationToken cancellationToken)
+        {
+
+            return await db.Account.AsNoTracking().Where(account => account.AccountNumber.CompareTo(accountNumber) == 0).Select(c => c.Password).
+                         FirstOrDefaultAsync(cancellationToken);
+
+        }
+
     }
 
 }
