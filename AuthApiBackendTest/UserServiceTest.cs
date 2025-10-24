@@ -9,15 +9,9 @@ using AuthApiBackend.DTOs.ResponseDtos;
 
 namespace AuthApiBackendTest
 {
-    public class EnvFixture
-    {
-        public EnvFixture()
-        {
-            DotNetEnv.Env.Load(@"C:\Users\jabul\source\repos\AuthNest\AuthApiBackend\.env");
-        }
-    }
 
-    public class UnitTest1 : IClassFixture<EnvFixture>
+    [Collection("Env collection")]
+    public class UnitTest1
     {
 
         private readonly Mock<IUserRepository> userRepo;
