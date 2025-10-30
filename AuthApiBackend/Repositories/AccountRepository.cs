@@ -4,6 +4,8 @@ using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Caching.Distributed;
+using Org.BouncyCastle.X509;
+using System.Linq;
 using System.Text;
 
 namespace AuthApiBackend.Repositories
@@ -93,6 +95,41 @@ namespace AuthApiBackend.Repositories
 
         }
 
+        public async Task<OldPassword?> RetrieveOldPassword(string loginNumber, CancellationToken cancellationToken)
+        {
+
+            return await db.Account.AsNoTracking().Where(account => account.AccountNumber == loginNumber).Select(p => new OldPassword(
+                p.Password,
+                p.Status,
+                p.UserId,
+                p.IsLocked
+                )).FirstOrDefaultAsync(cancellationToken);
+
+        }
+
+        public async Task UpdatePassword(string accountId, string NewPassword, CancellationToken cancellationToken)
+        {
+            var updatePassword = new Account { UserId = accountId };
+
+            db.Account.Attach(updatePassword);
+            updatePassword.Password = NewPassword;
+
+            db.Entry(updatePassword).Property(c => c.Password).IsModified = true;
+
+            await db.SaveChangesAsync(cancellationToken);
+
+        }
+
+        public async Task<string?> GetAccountId(string loginNumber, CancellationToken cancellationToken)
+        {
+            return await db.Account.Where(u => u.AccountNumber == loginNumber).Select(u => u.UserId).FirstOrDefaultAsync(cancellationToken);
+        }
+
+        public async Task<string?> GetOldPassword(string userId, CancellationToken cancellationToken)
+        {
+            return await  db.Account.AsNoTracking().Where(u => u.UserId == userId).Select(u => u.Password).
+                          FirstOrDefaultAsync(cancellationToken);
+        }
     }
 
 }

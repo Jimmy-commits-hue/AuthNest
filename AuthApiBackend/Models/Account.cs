@@ -42,6 +42,7 @@ namespace AuthApiBackend.Models
 
         public DateTime? ExpectedDeleteDate { get; set; } = null;
 
+        public ICollection<TemporaryPassword> TemporaryPassword { get; set; } = new List<TemporaryPassword>();
     }
 
 }

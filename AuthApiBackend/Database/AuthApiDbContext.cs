@@ -21,6 +21,7 @@ namespace AuthApiBackend.Database
 
             public DbSet<UserRole> UserRole { get; set; }
 
+            public DbSet<TemporaryPassword> TemporaryPassword { get; set; }
 
             private readonly DatabaseSettings _settings;
 
@@ -70,6 +71,9 @@ namespace AuthApiBackend.Database
 
                 modelBuilder.Entity<User>().HasOne(u => u.UserRole).WithOne(u => u.User).HasForeignKey<UserRole>(u => u.UserId).
                                            OnDelete(DeleteBehavior.Cascade);
+
+                modelBuilder.Entity<Account>().HasMany(u => u.TemporaryPassword).WithOne(u => u.Account).HasForeignKey(u => u.AccountId).
+                                               OnDelete(DeleteBehavior.Cascade);
 
                 base.OnModelCreating(modelBuilder);
 

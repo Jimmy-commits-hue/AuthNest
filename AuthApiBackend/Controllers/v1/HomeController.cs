@@ -15,37 +15,13 @@ namespace AuthApiBackend.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
 
-    public class HomeController : ControllerBase
+    public class HomeController(ILogger<HomeController> logger) : ControllerBase
     {
 
-        private readonly IUserService userService;
-        private readonly IContactDetailsService contactService;
-        private readonly IRoleService roleService;
-        private readonly IUserRoleService userRoleService;
-        private readonly IVerificationCodeService codeService;
-        private readonly IAccountService accountService;
-        private readonly MaxAttemptsConfig maxAttempts;
-        private readonly ILogger<HomeController> logger;
-
-        public HomeController(IUserService userService, IContactDetailsService contactService, IRoleService roleService,
-            IUserRoleService userRoleService, IVerificationCodeService codeService, IAccountService accountService
-            , IOptions<MaxAttemptsConfig> maxAttempt, ILogger<HomeController> logger)
-        {
-
-            this.contactService = contactService;
-            this.userService = userService;
-            this.roleService = roleService;
-            this.userRoleService = userRoleService;
-            this.codeService = codeService;
-            this.accountService = accountService;
-            this.maxAttempts = maxAttempt.Value;
-            this.logger = logger;
-
-        }
-
-
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto user, CancellationToken cancellationToken)
+        public async Task<IActionResult> Register([FromBody] RegisterDto user, CancellationToken cancellationToken,
+            IAccountService accountService, IVerificationCodeService codeService, IUserRoleService userRoleService,
+            IRoleService roleService, IUserService userService, IContactDetailsService contactService)
         {
 
             using (LogContext.PushProperty("Operation", "Registration"))
@@ -72,7 +48,8 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("verify")]
-        public async Task<IActionResult> VerifyCode([FromBody] CodeVerificationDto code, CancellationToken cancellationToken)
+        public async Task<IActionResult> VerifyCode([FromBody] CodeVerificationDto code, CancellationToken cancellationToken,
+            IAccountService accountService, IVerificationCodeService codeService, IContactDetailsService contactService)
         {
 
             using (LogContext.PushProperty("Operation", "CodeVerification"))
@@ -97,7 +74,7 @@ namespace AuthApiBackend.Controllers.V1
         [HttpGet("googleRegistration")]
         public IActionResult Login()
         {
-            
+
             return Challenge(new AuthenticationProperties { RedirectUri = "/api/v1/home/google-callback" },
                              GoogleDefaults.AuthenticationScheme);
 
@@ -107,7 +84,7 @@ namespace AuthApiBackend.Controllers.V1
         [HttpGet("google-callback")]
         public IActionResult GetUserInfo()
         {
-            
+
             var googleUser = new GoogleResponse
             {
                 Surname = User.FindFirstValue(ClaimTypes.Surname),
@@ -120,7 +97,8 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("resend-code")]
-        public async Task<IActionResult> ResendCode([FromBody] string idNumber, CancellationToken cancellationToken)
+        public async Task<IActionResult> ResendCode([FromBody] string idNumber, CancellationToken cancellationToken,
+            IVerificationCodeService codeService, IUserService userService)
         {
 
             using (LogContext.PushProperty("Operation", "CodeRequest"))
@@ -139,13 +117,52 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> LoginFrom([FromBody] LoginDto user)
+        public async Task<IActionResult> LoginFrom([FromBody] LoginDto user, CancellationToken cancellationToken,
+            IAccountService accountService)
         {
+            await accountService.VerifyLoginDetails(user, cancellationToken);
 
             return Ok("Logged in Successfully");
+        }
+
+        [HttpPost("change-password")]
+        public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto update, CancellationToken cancellationToken,
+            IAccountService accountService)
+        {
+
+            await accountService.UpdatePassword(update, cancellationToken);
+
+            return Ok("Password changed Successfully");
+        }
+
+        [HttpPost("reset-password")]
+        public async Task<IActionResult> ResetPassword([FromBody] string loginNumber, CancellationToken cancellationToken,
+            IAccountService accountService, ITemporaryPasswordService tempPassword)
+        {
+
+            string accountId = await accountService.GetAccountId(loginNumber, cancellationToken);
+
+            await tempPassword.CreateTemporaryPassword(accountId, cancellationToken);
+
+            return Ok(new { Messagge = "Please check your email for temporary password" });
+        }
+
+        [HttpPost("reset-verify")]
+        public async Task<IActionResult> VerifyTempPassword([FromBody] ResetPasswordDto resetPassword, CancellationToken cancellationToken,
+            IAccountService accountService, ITemporaryPasswordService tempPassword)
+        {
+
+            var accountId = await tempPassword.VerifyPassword(resetPassword.TempPasswordId, resetPassword.TemporaryPassword, cancellationToken);
+            
+            await accountService.VerifyResetPassword(accountId, resetPassword.NewPassword, cancellationToken);
+
+            await accountService.ResetPassword(accountId, resetPassword.NewPassword, cancellationToken);
+
+            await tempPassword.UpdatePasswordStatus(resetPassword.TempPasswordId, cancellationToken);
+
+            return Ok(new { Message = "Password resetted successfully" });
         }
 
     }
 
 }
-

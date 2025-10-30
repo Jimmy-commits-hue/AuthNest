@@ -21,7 +21,7 @@ namespace AuthApiBackend.Utilities
             aes.GenerateIV();
 
             using var ms = new MemoryStream();
-            // First, write IV to the beginning of the stream
+            
             ms.Write(aes.IV, 0, aes.IV.Length);
 
             using (var cryptoStream = new CryptoStream(ms, aes.CreateEncryptor(aes.Key, aes.IV), CryptoStreamMode.Write))

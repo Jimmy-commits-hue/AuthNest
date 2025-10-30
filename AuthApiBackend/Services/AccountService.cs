@@ -92,7 +92,59 @@ namespace AuthApiBackend.Services
 
         }
 
+        public async Task UpdatePassword(UpdatePasswordDto password, CancellationToken cancellationToken)
+        {
 
+            OldPassword oldPassword = await accountRepo.RetrieveOldPassword(password.loginNumber, cancellationToken)
+                ?? throw new UserNotFoundException("Please register first");
+
+            if(oldPassword.IsLocked == true)
+            {
+                throw new AccountLockedException("Account is locked");
+
+            }
+
+            if (oldPassword.Status == Enums.AccountStatus.Disabled)
+            {
+                throw new AccountDisabledException("Please enable your account first");
+            }
+
+            if (oldPassword.Status == Enums.AccountStatus.Deleted)
+            {
+                throw new AccountScheduledForDeletionException(
+                    "This account has been scheduled for deletion, please restore your account first");
+            }
+
+            PasswordVerificationResult result = HashHelper.VerifyHash(oldPassword.OldUserPassword, password.OldPassword);
+
+            if (result is PasswordVerificationResult.Failed)
+            {
+                throw new InvalidOldPasswordException("Invalid old password");
+            }
+
+            await accountRepo.UpdatePassword(oldPassword.accountId, HashHelper.Hash(password.NewPassword), cancellationToken);
+        }
+
+        public async Task<string> GetAccountId(string loginNumber, CancellationToken cancellationToken)
+        {
+            return await accountRepo.GetAccountId(loginNumber, cancellationToken) ?? 
+                 throw new UserNotFoundException("Please register first");
+        }
+
+        public async Task VerifyResetPassword(string userId, string password, CancellationToken cancellationToken)
+        {
+            var oldPassword = await accountRepo.GetOldPassword(userId, cancellationToken);
+
+            if(HashHelper.VerifyHash(oldPassword!, password) == PasswordVerificationResult.Success)
+            {
+                throw new NewOldPasswordEqualException("New password cannot be old password");
+            }
+        }
+
+        public async Task ResetPassword(string userId, string password, CancellationToken cancellationToken)
+        {
+            await accountRepo.UpdatePassword(userId, HashHelper.Hash(password), cancellationToken);
+        }
 
     }
 

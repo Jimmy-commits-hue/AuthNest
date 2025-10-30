@@ -24,6 +24,7 @@ namespace AuthApiBackend.RegisterServices
             Services.AddScoped<IUserRoleService, UserRoleService>();
             Services.AddScoped<IVerificationCodeService, VerificationCodeService>();
             Services.AddScoped<IAccountService, AccountService>();
+            Services.AddScoped<ITemporaryPasswordService, TemporaryPasswordService>();
 
             //Transient Services
             Services.AddTransient<INotification, Notification>();
@@ -35,10 +36,12 @@ namespace AuthApiBackend.RegisterServices
             Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             Services.AddScoped<IVerificationCodeRepo, VerificationCodeRepo>();
             Services.AddScoped<IAccountRepository, AccountRepository>();
+            Services.AddScoped<ITemporaryPasswordRepo,  TemporaryPasswordRepo>();
 
             //HostedServices
-            Services.AddHostedService<BackgroundTask.SendNotifications>();
-            Services.AddHostedService<BackgroundTask.SendAccountNumber>();
+            Services.AddHostedService<BackgroundTask.SendVerificationCodeNotification>();
+            Services.AddHostedService<BackgroundTask.SendAccountNumberNotification>();
+            Services.AddHostedService<BackgroundTask.SendPasswordChangeNotification>();
 
             //HttpContextAccessor Service
             Services.AddHttpContextAccessor();

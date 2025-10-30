@@ -45,5 +45,34 @@ namespace AuthApiBackend.Utilities
 
             return $"{takelast2}{sequence:D7}";
         }
+
+        public static string TemporaryPassword(int length = 9)
+        {
+
+            const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789!@<>?+=%";
+
+            char[] password = new char[length];
+
+            using (var rng = RandomNumberGenerator.Create())
+            {
+
+                byte[] bytes = new byte[4];
+
+                for (int i = 0; i < length; i++)
+                {
+
+                    rng.GetBytes(bytes);
+                    int index = (int)(BitConverter.ToUInt32(bytes, 0) % (uint)chars.Length);
+                    password[i] = chars[index];
+
+                }
+
+            }
+
+            return new string(password);
+
+        }
+
     }
+
 }

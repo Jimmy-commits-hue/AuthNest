@@ -23,6 +23,8 @@
 
         public string TemplateName { get; set; } = string.Empty;
 
+        public string TempPassword { set; get; } = string.Empty;
+
     }
 
 }
