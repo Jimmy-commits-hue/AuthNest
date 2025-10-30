@@ -67,6 +67,10 @@ namespace AuthApiBackend.Exceptions
                     log.LogError("User not found exception");
                     break;
 
+                case InvalidCredentialsException: response.ErrorCode = StatusCodes.Status401Unauthorized;
+                    log.LogError("");
+                    break;
+
                 default: return false;
 
             }

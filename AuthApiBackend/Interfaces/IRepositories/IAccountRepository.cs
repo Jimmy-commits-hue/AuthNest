@@ -18,5 +18,13 @@ namespace AuthApiBackend.Interfaces.IRepositories
         Task UpdateIsEmailSentStatus(string accountId, CancellationToken cancellationToken);
 
         Task<string?> GetUserLoginDetails(string accountNumber, CancellationToken cancellationToken);
+
+        Task<OldPassword?> RetrieveOldPassword(string accountId, CancellationToken cancellationToken);
+
+        Task<string?> GetAccountId(string loginNumber, CancellationToken cancellationToken);
+
+        Task<string?> GetOldPassword(string userId, CancellationToken cancellationToken);
+
+        Task UpdatePassword(string accountId, string NewPassword, CancellationToken cancellationToken);
     }
 }

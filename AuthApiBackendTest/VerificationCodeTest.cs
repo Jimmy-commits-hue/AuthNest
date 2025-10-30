@@ -11,7 +11,7 @@ using Microsoft.Extensions.Options;
 namespace AuthApiBackendTest
 {
 
-   // [Collection("Env collection")]
+    [Collection("Env collection")]
     public class VerificationCodeTest
     {
 

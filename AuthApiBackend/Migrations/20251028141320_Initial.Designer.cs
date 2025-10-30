@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApiBackend.Migrations
 {
     [DbContext(typeof(AuthApiDbContext))]
-    [Migration("20251023143807_Initial")]
+    [Migration("20251028141320_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -113,6 +113,35 @@ namespace AuthApiBackend.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Role");
+                });
+
+            modelBuilder.Entity("AuthApiBackend.Models.TemporaryPassword", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<string>("AccountId")
+                        .IsRequired()
+                        .HasColumnType("varchar(255)");
+
+                    b.Property<DateTime>("GeneratedAt")
+                        .HasColumnType("datetime(6)");
+
+                    b.Property<string>("HashedPassword")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("tinyint(1)");
+
+                    b.Property<bool>("IsEmailSent")
+                        .HasColumnType("tinyint(1)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccountId");
+
+                    b.ToTable("TemporaryPassword");
                 });
 
             modelBuilder.Entity("AuthApiBackend.Models.User", b =>
@@ -228,6 +257,17 @@ namespace AuthApiBackend.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("AuthApiBackend.Models.TemporaryPassword", b =>
+                {
+                    b.HasOne("AuthApiBackend.Models.Account", "Account")
+                        .WithMany("TemporaryPassword")
+                        .HasForeignKey("AccountId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Account");
+                });
+
             modelBuilder.Entity("AuthApiBackend.Models.User", b =>
                 {
                     b.HasOne("AuthApiBackend.Models.ContactDetails", null)
@@ -262,6 +302,11 @@ namespace AuthApiBackend.Migrations
                         .IsRequired();
 
                     b.Navigation("ContactDetails");
+                });
+
+            modelBuilder.Entity("AuthApiBackend.Models.Account", b =>
+                {
+                    b.Navigation("TemporaryPassword");
                 });
 
             modelBuilder.Entity("AuthApiBackend.Models.ContactDetails", b =>

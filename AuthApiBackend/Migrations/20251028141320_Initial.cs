@@ -53,6 +53,32 @@ namespace AuthApiBackend.Migrations
                 .Annotation("MySql:CharSet", "utf8mb4");
 
             migrationBuilder.CreateTable(
+                name: "TemporaryPassword",
+                columns: table => new
+                {
+                    Id = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    AccountId = table.Column<string>(type: "varchar(255)", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    HashedPassword = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    IsActive = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    IsEmailSent = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    GeneratedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TemporaryPassword", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TemporaryPassword_Account_AccountId",
+                        column: x => x.AccountId,
+                        principalTable: "Account",
+                        principalColumn: "UserId",
+                        onDelete: ReferentialAction.Cascade);
+                })
+                .Annotation("MySql:CharSet", "utf8mb4");
+
+            migrationBuilder.CreateTable(
                 name: "ContactDetails",
                 columns: table => new
                 {
@@ -178,6 +204,11 @@ namespace AuthApiBackend.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_TemporaryPassword_AccountId",
+                table: "TemporaryPassword",
+                column: "AccountId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_User_ContactDetailsUserId",
                 table: "User",
                 column: "ContactDetailsUserId");
@@ -223,16 +254,19 @@ namespace AuthApiBackend.Migrations
                 table: "ContactDetails");
 
             migrationBuilder.DropTable(
-                name: "Account");
+                name: "RefreshToken");
 
             migrationBuilder.DropTable(
-                name: "RefreshToken");
+                name: "TemporaryPassword");
 
             migrationBuilder.DropTable(
                 name: "UserRole");
 
             migrationBuilder.DropTable(
                 name: "VerificationCode");
+
+            migrationBuilder.DropTable(
+                name: "Account");
 
             migrationBuilder.DropTable(
                 name: "Role");
