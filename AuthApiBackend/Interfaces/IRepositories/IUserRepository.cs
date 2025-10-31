@@ -15,6 +15,8 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task DeleteAsync(User user, CancellationToken cancellationToken);
 
+        Task<ForgottenLoginNumber?> GetUserId(string nationalId, CancellationToken cancellationToken);
+
     }
 
 }

@@ -49,6 +49,14 @@ namespace AuthApiBackend.Repositories
 
         }
 
+        public async Task<ForgottenLoginNumber?> GetUserId(string nationalId,  CancellationToken cancellationToken)
+        {
+
+            return await context.User.AsNoTracking().Where(u => u.IdNumber == nationalId).Select(u => new ForgottenLoginNumber(
+                u.Account!.AccountNumber,
+                u.ContactDetails!.Email)).FirstOrDefaultAsync(cancellationToken);
+        }
+
     }
 
 }

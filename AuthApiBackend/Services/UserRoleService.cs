@@ -11,13 +11,12 @@ namespace AuthApiBackend.Services
 
             await userRoleRepo.CreateAsync(new Models.UserRole
             {
-
                 UserId = userId,
                 RoleId = roleId,
-
             }, cancellationToken);
 
         }
 
     }
+
 }
