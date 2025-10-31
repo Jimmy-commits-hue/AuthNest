@@ -23,7 +23,7 @@ namespace AuthApiBackend.Services
 
         public async Task CreateCodeAsync(string userId, CancellationToken cancellationToken, int attemptCount = 1)
         {
-
+           
             var code = new Models.VerificationCode
             {
                 EmailId = userId,
@@ -41,7 +41,7 @@ namespace AuthApiBackend.Services
         {
 
             VerificationResponse? existingCode = await codeRepo.GetAsync(codeId, cancellationToken);
-            
+
             if (existingCode is null || EncryptData.Decrypt(existingCode.Code) != code)
             {
                 throw new NoCodeMatchException("Invalid code");
@@ -74,7 +74,7 @@ namespace AuthApiBackend.Services
 
             int attemptCount = userAttemptsAndUserId.AttemptCount + 1;
 
-            if (attemptCount > int.Parse(max.MaxAttempts))
+            if (attemptCount > int.Parse(max.Max))
             {
                throw new DailyMaximumAttemptsReachedException("Maximum attempt reached. Please try again later");
             }

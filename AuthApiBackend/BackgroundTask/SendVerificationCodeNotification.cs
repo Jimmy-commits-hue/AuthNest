@@ -92,8 +92,6 @@ namespace AuthApiBackend.BackgroundTask
 
                     }
 
-                    Console.WriteLine("Waiting for next iteration");
-
                     await Task.Delay(timeSpan, stoppingToken);
 
                 }

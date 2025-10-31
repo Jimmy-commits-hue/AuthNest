@@ -1,9 +1,9 @@
 ﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.DTOs.ResponseDtos;
-using AuthApiBackend.Models;
 
 namespace AuthApiBackend.Interfaces.IServices
 {
+
     public interface IUserService 
     {
 
@@ -11,6 +11,8 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task<UserResponse> GetUserIdAsync(string idNumber, CancellationToken cancellationToken);
 
+        Task FindUserLoginNumberById(string nationalId, CancellationToken cancellationToken);
 
     }
+
 }

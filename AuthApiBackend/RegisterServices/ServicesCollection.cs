@@ -42,6 +42,7 @@ namespace AuthApiBackend.RegisterServices
             Services.AddHostedService<BackgroundTask.SendVerificationCodeNotification>();
             Services.AddHostedService<BackgroundTask.SendAccountNumberNotification>();
             Services.AddHostedService<BackgroundTask.SendPasswordChangeNotification>();
+            Services.AddHostedService<BackgroundTask.SendForgettenLoginNumber>();
 
             //HttpContextAccessor Service
             Services.AddHttpContextAccessor();

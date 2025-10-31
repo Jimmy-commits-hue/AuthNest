@@ -24,7 +24,7 @@ namespace AuthApiBackendTest
             codeRepo = new Mock<IVerificationCodeRepo>();
             service = new VerificationCodeService(codeRepo.Object, Options.Create(new AuthApiBackend.Configurations.MaxAttemptsConfig
             {
-                MaxAttempts = "3"
+                Max = "3"
             }));
 
         }

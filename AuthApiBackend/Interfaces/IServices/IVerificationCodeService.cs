@@ -5,7 +5,7 @@ namespace AuthApiBackend.Interfaces.IServices
 {
     public interface IVerificationCodeService
     {
-        Task CreateCodeAsync(string userId, CancellationToken cancellationToken, int attemptCount = 0);
+        Task CreateCodeAsync(string userId, CancellationToken cancellationToken, int attemptCount = 1);
 
         Task<IEnumerable<PendingCode>?> GetPendingCodeAsync(CancellationToken cancellationToken);
 

@@ -12,40 +12,49 @@ namespace AuthApiBackend.Services
     public class UserService(IUserRepository userRepo) : IUserService
     {
 
-
         public async Task<string> CreateUserAsync(RegisterDto user, CancellationToken cancellationToken)
+        {
+
+            var IdNumber = HashHelper.HashId(user.IdNumber);
+
+            var userExist = await userRepo.GetAsync(IdNumber, cancellationToken);
+
+            if (userExist is not null)
+                throw new UserAlreadyExistException("User already exist");
+
+            var newUser = new User
             {
+                IdNumber = IdNumber,
+                FirstName = user.FirstName,
+                Surname = user.Surname,
+            };
 
-               
+            await userRepo.CreateAsync(newUser, cancellationToken);
 
-                var IdNumber = HashHelper.HashId(user.IdNumber);
+            return newUser.Id;
 
-                var userExist = await userRepo.GetAsync(IdNumber, cancellationToken);
+        }
 
-                if (userExist is not null)
-                    throw new UserAlreadyExistException("User already exist");
+        public async Task<UserResponse> GetUserIdAsync(string idNumber, CancellationToken cancellationToken)
+        {
 
-                var newUser = new User
-                {
-                    IdNumber = IdNumber,
-                    FirstName = user.FirstName,
-                    Surname = user.Surname,
-                };
+            var userInfo = await userRepo.GetAsync(HashHelper.HashId(idNumber), cancellationToken)
+                           ?? throw new UserNotFoundException("User does not exist");
 
-                await userRepo.CreateAsync(newUser, cancellationToken);
+            return userInfo;
 
-                return newUser.Id;
+        }
 
-            }
+        public async Task FindUserLoginNumberById(string nationalId, CancellationToken cancellationToken)
+        {
 
-            public async Task<UserResponse> GetUserIdAsync(string idNumber, CancellationToken cancellationToken)
-            {
+            ForgottenLoginNumber data = await userRepo.GetUserId(HashHelper.HashId(nationalId), cancellationToken) ??
+                                            throw new Exception("An email has been sent to ******@gmail.com");
 
-                var userInfo = await userRepo.GetAsync(HashHelper.HashId(idNumber), cancellationToken)
-                               ?? throw new UserNotFoundException("User does not exist");
+            SendStudentNumberToClient.resendForgettedLoginNumber.Enqueue(data);
 
-                return userInfo;
+        }
 
-            }
     }
+
 }

@@ -109,6 +109,37 @@ namespace AuthApiBackendTest
             userRepo.Verify(userRepo => userRepo.GetAsync(HashHelper.HashId(idNumber), CancellationToken.None), Times.Once);
         }
 
-        
+        [Fact]
+        public async Task FindUserLoginNumberById_throwsException_IfUserDoesNotExist()
+        {
+            string nationalId = "0130534589867";
+
+            userRepo.Setup(c => c.GetUserId(HashHelper.HashId(nationalId), CancellationToken.None)).
+                ReturnsAsync((ForgottenLoginNumber?)null);
+
+            var ex = await Assert.ThrowsAsync<Exception>(async () =>
+                     await userService.FindUserLoginNumberById(nationalId, CancellationToken.None));
+
+            Assert.Equal("An email has been sent to ******@gmail.com", ex.Message);
+
+            userRepo.Verify(c => c.GetUserId(It.IsAny<string>(), CancellationToken.None), Times.Once);
+        }
+
+        [Fact]
+        public async Task FindUserLoginNumberById_ReturnsUserLoginNumberAndEmail_IfUserExist()
+        {
+
+            string nationalId = "0130534589867";
+
+            userRepo.Setup(c => c.GetUserId(HashHelper.HashId(nationalId), CancellationToken.None)).ReturnsAsync(
+                new ForgottenLoginNumber(
+                    UserEmail: "jimmyjabulani01@gmail.com",
+                    LoginNumber: "250000001"
+                    ));
+
+            await userService.FindUserLoginNumberById(nationalId, CancellationToken.None);
+
+            userRepo.Verify(c => c.GetUserId(It.IsAny<string>(), CancellationToken.None), Times.Once);
+        }
     }
 }

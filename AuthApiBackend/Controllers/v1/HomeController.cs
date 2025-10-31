@@ -163,6 +163,16 @@ namespace AuthApiBackend.Controllers.V1
             return Ok(new { Message = "Password resetted successfully" });
         }
 
+        [HttpPost("forgot-loginNumber")]
+        public async Task<IActionResult> RetrieveLoginNumber([FromBody] string nationalId, CancellationToken cancellationToken
+            , IUserService userService)
+        {
+
+            await userService.FindUserLoginNumberById(nationalId, cancellationToken);
+
+            return Ok(new { Message = "An email has been sent to ******@gmail.com" });
+        }
+
     }
 
 }
