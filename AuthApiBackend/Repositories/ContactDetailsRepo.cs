@@ -11,22 +11,20 @@ namespace AuthApiBackend.Repositories
 
         public async Task CreateAsync(ContactDetails contactDetails, CancellationToken cancellationToken)
         {
-
             context.ContactDetails.Add(contactDetails);
             await context.SaveChangesAsync(cancellationToken);
-
         }
 
         public async Task<ContactDetails?> GetAsync(string userId, CancellationToken cancellationToken)
         {
-
-            return await context.ContactDetails.AsNoTracking().FirstOrDefaultAsync( u => u.UserId.CompareTo(userId) == 0, cancellationToken);
-
+            return await context.ContactDetails.AsNoTracking().
+                         FirstOrDefaultAsync( u => u.Id == userId, cancellationToken);
         }
 
         public async Task UpdateIsEmailVerified(string emailId, CancellationToken cancellationToken)
         {
-            var updateIsEmailVerified = new ContactDetails { UserId = emailId };
+            var updateIsEmailVerified = new ContactDetails { Id = emailId };
+
             context.ContactDetails.Attach(updateIsEmailVerified);
 
             updateIsEmailVerified.IsEmailVerified = true;
@@ -34,7 +32,19 @@ namespace AuthApiBackend.Repositories
             context.Entry(updateIsEmailVerified).Property(c => c.IsEmailVerified).IsModified = true;
 
             await context.SaveChangesAsync(cancellationToken);
+        }
 
+        public async Task UpdateEmail(string accoutId, string newEmail, CancellationToken cancellationToken)
+        {
+            var updateEmail = new ContactDetails { Id = accoutId };
+
+            context.ContactDetails.Attach(updateEmail);
+
+            updateEmail.Email = newEmail;
+
+            context.Entry(updateEmail).Property(c => c.Email).IsModified = true;
+
+            await context.SaveChangesAsync(cancellationToken);
         }
 
     }

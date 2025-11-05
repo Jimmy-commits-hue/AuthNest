@@ -8,7 +8,7 @@ namespace AuthApiBackend.Models
     public class Account
     {
         [Key]
-        public string UserId { get; set; } = string.Empty;
+        public string Id { get; set; } = string.Empty;
 
         public User User { get; set; } = null!;
 
@@ -28,19 +28,19 @@ namespace AuthApiBackend.Models
 
         public bool IsEmailSent { get; set; } = false;
 
-        public int FailedLoginAttempts { get; set; } = 0;
+        public int FailedLoginAttempts { get; set; }
 
         public bool IsLocked
         {
             get
             {
-                return LockOutUntilDate.HasValue && LockOutUntilDate.Value > DateTime.UtcNow;
+                return LockOutUntilDate.HasValue && LockOutUntilDate > DateTimeOffset.UtcNow.ToUnixTimeSeconds();
             }
         }
 
-        public DateTime? LockOutUntilDate { get; set; } = null;
+        public long? LockOutUntilDate { get; set; }
 
-        public DateTime? ExpectedDeleteDate { get; set; } = null;
+        public long ExpectedDeleteDate { get; set; } 
 
         public ICollection<TemporaryPassword> TemporaryPassword { get; set; } = new List<TemporaryPassword>();
     }

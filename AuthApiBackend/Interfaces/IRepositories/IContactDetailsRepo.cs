@@ -8,6 +8,8 @@
         Task<Models.ContactDetails?> GetAsync(string userId, CancellationToken cancellationToken);
 
         Task UpdateIsEmailVerified(string emailId, CancellationToken cancellationToken);
+
+        Task UpdateEmail(string accoutId, string newEmail, CancellationToken cancellationToken);
     }
 
 }

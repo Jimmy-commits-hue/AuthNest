@@ -8,11 +8,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task CreateAsync(Role role, CancellationToken cancellationToken);
 
-        Task UpdateAsync(Role role, CancellationToken cancellationToken);
-
-       //Task<IEnumerable<Role>> GetAllAsync(CancellationToken cancellationToken);
-
         Task<int?> GetAsync(string role, CancellationToken cancellationToken);
+
+        Task<Role> GetRole(int roleRoleId, CancellationToken cancellationToken);
 
         Task DeleteAsync(Role role, CancellationToken cancellationToken);
     }

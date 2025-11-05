@@ -11,36 +11,31 @@ namespace AuthApiBackend.Repositories
 
         public async Task CreateAsync(Role role, CancellationToken cancellationToken)
         {
-
             context.Role.Add(role);
             await context.SaveChangesAsync(cancellationToken);
-
         }
 
         public async Task<int?> GetAsync(string role, CancellationToken cancellationToken)
         {
-
-            return await context.Role.Where(u => u.RoleName == role).AsNoTracking().Select(u => u.Id)
-                         .FirstOrDefaultAsync(cancellationToken);
-
-
-        }
-
-        public async Task UpdateAsync(Role role, CancellationToken cancellationToken)
-        {
-
-            context.Role.Update(role);
-            await context.SaveChangesAsync(cancellationToken);
-
+            return await context.Role.AsNoTracking().
+                         Where(u => u.RoleName == role).
+                         Select(u => u.Id).
+                         FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task DeleteAsync(Role role, CancellationToken cancellationToken)
         {
-
             context.Role.Remove(role);
             await context.SaveChangesAsync(cancellationToken);
+        }
 
+        public async Task<Role> GetRole(int roleRoleId, CancellationToken cancellationToken)
+        {
+            return await context.Role.AsNoTracking().
+                         Where(c => c.Id == roleRoleId).
+                         FirstAsync(cancellationToken);
         }
 
     }
+
 }

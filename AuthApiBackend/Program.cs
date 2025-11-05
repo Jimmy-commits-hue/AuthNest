@@ -29,7 +29,10 @@ try
 
     builder.Services.AddSwaggerService();
 
-    builder.Services.AddControllers();
+    builder.Services.AddControllers().AddNewtonsoftJson(options => {
+        options.SerializerSettings.ContractResolver =
+            new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
+    });
 
     builder.Services.OathServiceMiddleware();
 

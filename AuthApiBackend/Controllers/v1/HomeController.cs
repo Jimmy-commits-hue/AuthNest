@@ -1,13 +1,11 @@
-﻿using AuthApiBackend.Configurations;
-using AuthApiBackend.DTOs;
+﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.DTOs.ResponseDtos;
+using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Options;
-using Serilog.Context;
 using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.V1
@@ -15,69 +13,41 @@ namespace AuthApiBackend.Controllers.V1
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
 
-    public class HomeController(ILogger<HomeController> logger) : ControllerBase
+    public class HomeController : ControllerBase
     {
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] RegisterDto user, CancellationToken cancellationToken,
-            IAccountService accountService, IVerificationCodeService codeService, IUserRoleService userRoleService,
-            IRoleService roleService, IUserService userService, IContactDetailsService contactService)
+        public async Task<IActionResult> Register([FromBody] RegisterDto user, IRegistration registration, 
+            CancellationToken cancellationToken)
         {
-
-            using (LogContext.PushProperty("Operation", "Registration"))
-            {
-
-                string userId = await userService.CreateUserAsync(user, cancellationToken);
-
-                await contactService.CreateUserContactDetails(userId, user.Email, cancellationToken);
-
-                int role = await roleService.GetRoleAsync("User", cancellationToken);
-
-                await userRoleService.CreateUserRoleAsync(role, userId, cancellationToken);
-
-                await codeService.CreateCodeAsync(userId, cancellationToken);
-
-                await accountService.CreateAccountAsync(userId, user.Password, cancellationToken);
-
-                logger.LogInformation("A verification Code for {UserId} was sent to {Email}", userId, user.Email);
-
-            }
+            await registration.Register(user, cancellationToken);
 
             return Ok(new { Message = "Please check your emails for comfirmation email with a code" });
-
         }
 
         [HttpPost("verify")]
-        public async Task<IActionResult> VerifyCode([FromBody] CodeVerificationDto code, CancellationToken cancellationToken,
-            IAccountService accountService, IVerificationCodeService codeService, IContactDetailsService contactService)
+        public async Task<IActionResult> VerifyCode([FromBody] CodeVerificationDto code, ICodeVerification verify,
+            CancellationToken cancellationToken)
         {
-
-            using (LogContext.PushProperty("Operation", "CodeVerification"))
-            {
-
-                string userId = await codeService.VerifyCodeAsync(code.CodeId, code.Code, cancellationToken);
-
-                await contactService.UpdateIsEmailVerified(userId, cancellationToken);
-
-                await codeService.UpdateCodeAsync(code.CodeId, cancellationToken);
-
-                await accountService.UpdateAccountNumber(userId, cancellationToken);
-
-                logger.LogInformation("Code for {UserId} was verifyed successfully", userId);
-
-            }
+            await verify.VerifyCode(code, cancellationToken);
 
             return Ok(new { Message = "Code verified successfully" });
+        }
 
+        [HttpPost("login")]
+        public async Task<IActionResult> Login([FromBody] LoginDto user, ILoginOperation login, CancellationToken cancellationToken)
+        {
+
+            await login.Login(user, cancellationToken);
+
+            return Ok("Logged in Successfully");
         }
 
         [HttpGet("googleRegistration")]
         public IActionResult Login()
         {
-
             return Challenge(new AuthenticationProperties { RedirectUri = "/api/v1/home/google-callback" },
                              GoogleDefaults.AuthenticationScheme);
-
         }
 
         [Authorize]
@@ -97,68 +67,36 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("resend-code")]
-        public async Task<IActionResult> ResendCode([FromBody] string idNumber, CancellationToken cancellationToken,
-            IVerificationCodeService codeService, IUserService userService)
+        public async Task<IActionResult> ResendCode([FromBody] string idNumber, ICodeResend codeResend, CancellationToken cancellationToken)
         {
-
-            using (LogContext.PushProperty("Operation", "CodeRequest"))
-            {
-
-                var userAttemptsAndUserId = await userService.GetUserIdAsync(idNumber, cancellationToken);
-
-                await codeService.RequestForCode(userAttemptsAndUserId, cancellationToken);
-
-                logger.LogInformation("New verification code was sent for {UserId}", userAttemptsAndUserId.UserId);
-
-            }
+            await codeResend.ResendCode(idNumber, cancellationToken);
 
             return Ok(new { Message = "A new code has been sent to your email." });
-
-        }
-
-        [HttpPost("login")]
-        public async Task<IActionResult> LoginFrom([FromBody] LoginDto user, CancellationToken cancellationToken,
-            IAccountService accountService)
-        {
-            await accountService.VerifyLoginDetails(user, cancellationToken);
-
-            return Ok("Logged in Successfully");
         }
 
         [HttpPost("change-password")]
         public async Task<IActionResult> UpdatePassword([FromBody] UpdatePasswordDto update, CancellationToken cancellationToken,
             IAccountService accountService)
         {
-
             await accountService.UpdatePassword(update, cancellationToken);
 
             return Ok("Password changed Successfully");
         }
 
         [HttpPost("reset-password")]
-        public async Task<IActionResult> ResetPassword([FromBody] string loginNumber, CancellationToken cancellationToken,
-            IAccountService accountService, ITemporaryPasswordService tempPassword)
+        public async Task<IActionResult> ResetPasswordRequest([FromBody] PasswordReset passwordReset, IResetPasswordRequest reset,
+            CancellationToken cancellationToken)
         {
-
-            string accountId = await accountService.GetAccountId(loginNumber, cancellationToken);
-
-            await tempPassword.CreateTemporaryPassword(accountId, cancellationToken);
+            await reset.RequestResetPassword(passwordReset, cancellationToken);
 
             return Ok(new { Messagge = "Please check your email for temporary password" });
         }
 
         [HttpPost("reset-verify")]
-        public async Task<IActionResult> VerifyTempPassword([FromBody] ResetPasswordDto resetPassword, CancellationToken cancellationToken,
-            IAccountService accountService, ITemporaryPasswordService tempPassword)
+        public async Task<IActionResult> ResetPassword([FromBody] ResetPasswordDto resetPassword, IResetPassword reset,
+            CancellationToken cancellationToken)
         {
-
-            var accountId = await tempPassword.VerifyPassword(resetPassword.TempPasswordId, resetPassword.TemporaryPassword, cancellationToken);
-            
-            await accountService.VerifyResetPassword(accountId, resetPassword.NewPassword, cancellationToken);
-
-            await accountService.ResetPassword(accountId, resetPassword.NewPassword, cancellationToken);
-
-            await tempPassword.UpdatePasswordStatus(resetPassword.TempPasswordId, cancellationToken);
+            await reset.PasswordReset(resetPassword, cancellationToken);
 
             return Ok(new { Message = "Password resetted successfully" });
         }

@@ -1,8 +1,9 @@
 ﻿using AuthApiBackend.DTOs;
-using Microsoft.AspNetCore.Http;
+using AuthApiBackend.Interfaces.IOperations;
+using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
-using System.Security.Claims;
+
 
 namespace AuthApiBackend.Controllers.V3
 {
@@ -17,31 +18,69 @@ namespace AuthApiBackend.Controllers.V3
             return Ok("Welcome");
         }
 
-        [HttpPatch]
-        public async Task<IActionResult> UpdateDetails()
+        [HttpPatch("update-details")]
+        public async Task<IActionResult> UpdateDetails(string Id, [FromBody] JsonPatchDocument<UserPatchDetails> userPatch,
+            IUserService userService, CancellationToken cancellationToken, IContactDetailsService contactDetails)
         {
+
+            if (userPatch == null)
+                return BadRequest("No fields to update");
+
+            var user = new UserPatchDetails();
+
+            userPatch.ApplyTo(user, ModelState);
+
+            if (!ModelState.IsValid)
+                return BadRequest(ModelState);
+
+            if (user.FirstName != null || user.Surname != null)
+            {
+                await userService.UpdateUserPartially(Id, userPatch, user, cancellationToken);
+            }
+
+            if (user.Email != null)
+            {
+                await contactDetails.UpdateEmail(Id, user.Email!, cancellationToken);
+            }
+
             return Ok("Details Updated Successfully");
         }
 
-        [HttpDelete]
-        public async Task<IActionResult> DeleteAccount()
+        [HttpPut("Disable-account")]
+        public async Task<IActionResult> DeactivateAccount(string loginNumber, CancellationToken cancellationToken, IAccountService accountService)
         {
 
-            return Ok("Account deleted Successfully");
-        }
-
-        [HttpPatch]
-        public async Task<IActionResult> DeactivateAccount()
-        {
+            await accountService.DisableAccount(loginNumber, cancellationToken);
 
             return Ok("Account deactivated successfully");
         }
 
-        [HttpPatch]
-        public async Task<ActionResult> ActivateAccount()
+        [HttpPut("active-account")]
+        public async Task<IActionResult> ActivateAccount(string userId, string loginNumber, CancellationToken cancellationToken,
+            IAccountService accountService, IUserService userService)
         {
+            var accountId = await userService.GetUserPkById(userId, cancellationToken);
 
-            return Ok("Welcome back");
+            await accountService.EnableAccount(accountId, loginNumber, cancellationToken);
+
+            return Ok(new { Message = "Account activated successfully" });
+        }
+
+        [HttpPut("delete-account")]
+        public async Task<IActionResult> DeleteAccount(string loginNumber, CancellationToken cancellationToken, IAccountService accountService)
+        {
+            await accountService.ScheduleAccountForDeletion(loginNumber, cancellationToken);
+
+            return Ok(new { Message = $"Account will be permanently deleted on {DateTime.UtcNow.AddDays(2).ToLocalTime()}" });
+        }
+
+        [HttpPut("cancel-account-deletion")]
+        public async Task<IActionResult> CancelAccountScheduledDeletion([FromBody] LoginDto login, ICancelDeletion cancel,
+            CancellationToken cancellationToken)
+        {
+            await cancel.CancelAccountDeletion(login, cancellationToken);
+
+            return Ok(new { Message = "Account retrieved" });
         }
     }
 }

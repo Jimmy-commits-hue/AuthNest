@@ -1,11 +1,13 @@
 ﻿using AuthApiBackend.Controllers.V1;
 using AuthApiBackend.Controllers.V2;
 using AuthApiBackend.Controllers.V3;
+using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Repositories;
 using AuthApiBackend.Services;
+using AuthApiBackend.Services.Operations;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.AspNetCore.Mvc.Versioning.Conventions;
 
@@ -43,6 +45,10 @@ namespace AuthApiBackend.RegisterServices
             Services.AddHostedService<BackgroundTask.SendAccountNumberNotification>();
             Services.AddHostedService<BackgroundTask.SendPasswordChangeNotification>();
             Services.AddHostedService<BackgroundTask.SendForgettenLoginNumber>();
+            Services.AddHostedService<BackgroundTask.UnlockAccounts>();
+            Services.AddHostedService<BackgroundTask.PermanentDeleteAccounts>();
+            //Services.AddHostedService<BackgroundTask.CleanExpiredCodes>();
+            //Services.AddHostedService<BackgroundTask.CleanUsedCodes>();
 
             //HttpContextAccessor Service
             Services.AddHttpContextAccessor();
@@ -59,6 +65,16 @@ namespace AuthApiBackend.RegisterServices
                 options.Conventions.Controller<AdminController>().HasApiVersion(2, 0);
                 options.Conventions.Controller<UserController>().HasApiVersion(3, 0);
             });
+
+            //Operations Services
+            Services.AddScoped<IRegistration, Registration>();
+            Services.AddScoped<ICodeVerification, CodeVerification>();
+            Services.AddScoped<ILoginOperation, LoginOperation>();
+            Services.AddScoped<ICodeResend, CodeResend>();
+            Services.AddScoped<IResetPassword, ResetPassword>();
+            Services.AddScoped<IResetPasswordRequest, ResetPasswordRequest>();
+            Services.AddScoped<ICancelDeletion, CancelDeletion>();
+            Services.AddScoped<IDeleteRole,  DeleteRole>();
 
             Services.AddVersionedApiExplorer(options =>
             {

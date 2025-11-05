@@ -54,10 +54,10 @@ namespace AuthApiBackend.Database
 
                 modelBuilder.Entity<User>().HasIndex(u => u.Id).IsUnique();
 
-                modelBuilder.Entity<User>().HasOne(u => u.ContactDetails).WithOne(u => u.User).HasForeignKey<ContactDetails>(u => u.UserId).
+                modelBuilder.Entity<User>().HasOne(u => u.ContactDetails).WithOne(u => u.User).HasForeignKey<ContactDetails>(u => u.Id).
                                             OnDelete(DeleteBehavior.Cascade);
 
-                modelBuilder.Entity<User>().HasOne(u => u.Account).WithOne(u => u.User).HasForeignKey<Account>(u => u.UserId).
+                modelBuilder.Entity<User>().HasOne(u => u.Account).WithOne(u => u.User).HasForeignKey<Account>(u => u.Id).
                                             OnDelete(DeleteBehavior.Cascade);
 
                 modelBuilder.Entity<ContactDetails>().HasMany(u => u.VerificationCode).WithOne(u => u.ContactDetails).HasForeignKey(u => u.EmailId).
@@ -69,7 +69,7 @@ namespace AuthApiBackend.Database
                 modelBuilder.Entity<Role>().HasMany(u => u.UserRole).WithOne(u => u.Role).HasForeignKey(u => u.RoleId).
                                            OnDelete(DeleteBehavior.Cascade);
 
-                modelBuilder.Entity<User>().HasOne(u => u.UserRole).WithOne(u => u.User).HasForeignKey<UserRole>(u => u.UserId).
+                modelBuilder.Entity<User>().HasOne(u => u.UserRole).WithOne(u => u.User).HasForeignKey<UserRole>(u => u.Id).
                                            OnDelete(DeleteBehavior.Cascade);
 
                 modelBuilder.Entity<Account>().HasMany(u => u.TemporaryPassword).WithOne(u => u.Account).HasForeignKey(u => u.AccountId).

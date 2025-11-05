@@ -55,11 +55,10 @@ namespace AuthApiBackend.BackgroundTask
 
                                         var notification = new NotificationDto
                                         {
-
                                             AccountNumber = account.AccountNumber,
+                                            Subject = "Allocated Account Number",
                                             ToEmail = account.Email!,
-                                            TemplateName = "AccountNumber.cshtml",
-
+                                            TemplateName = "AccountNumber.cshtml"
                                         };
 
                                         await emailService.SendNotification(notification);

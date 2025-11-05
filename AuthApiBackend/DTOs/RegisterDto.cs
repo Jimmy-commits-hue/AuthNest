@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Newtonsoft.Json;
+using System.ComponentModel.DataAnnotations;
 
 namespace AuthApiBackend.DTOs
 {
@@ -11,13 +12,7 @@ namespace AuthApiBackend.DTOs
         public string IdNumber { get; set; } = string.Empty;
 
         [Required]
-        public string FirstName = string.Empty;
-
-        public string firstName
-        {
-            set => FirstName = value.Split(' ')[0];
-            get => FirstName;
-        }
+        public string FirstName { get; set; } = string.Empty;
 
         [Required]
         public string Surname { get; set; } = string.Empty;

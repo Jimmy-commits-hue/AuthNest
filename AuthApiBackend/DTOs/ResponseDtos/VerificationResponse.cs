@@ -1,10 +1,10 @@
 ﻿namespace AuthApiBackend.DTOs.ResponseDtos
 {
-    public class VerificationResponse
-    {
-        public string UserId { get; set; } = null!;
-        public bool IsExpired { get; set; }
+    public record VerificationResponse
+    (
+        string UserId,
+        bool IsExpired,
+        string Code
+    );
 
-        public string Code { get; set; } = null!;
-    }
 }
