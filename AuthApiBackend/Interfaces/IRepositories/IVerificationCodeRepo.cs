@@ -21,6 +21,15 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task UpdateActiveStatusAsync(string codeId, CancellationToken cancellationToken);
 
+        Task<IEnumerable<VerificationCode>?> GetExpiredVericationCodes(CancellationToken cancellationToken);
+
+        Task DeleteCodes(VerificationCode code, CancellationToken cancellationToken);
+
+        Task<string?> GetCodeId(string accountId, CancellationToken cancellationToken);
+
+        Task DeactivateOldCode(string code, CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> GetAllUsedVerificationCodes(CancellationToken cancellationToken);
     }
 
 }

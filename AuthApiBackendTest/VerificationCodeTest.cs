@@ -4,13 +4,12 @@ using AuthApiBackend.Models;
 using AuthApiBackend.Utilities;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.DTOs.ResponseDtos;
-using Microsoft.Extensions.Configuration;
 using AuthApiBackend.Exceptions.ExceptionTypes;
 using Microsoft.Extensions.Options;
 
 namespace AuthApiBackendTest
 {
-
+    
     [Collection("Env collection")]
     public class VerificationCodeTest
     {
@@ -23,154 +22,140 @@ namespace AuthApiBackendTest
 
             codeRepo = new Mock<IVerificationCodeRepo>();
             service = new VerificationCodeService(codeRepo.Object, Options.Create(new AuthApiBackend.Configurations.MaxAttemptsConfig
-            {
-                Max = "3"
-            }));
+                                                   {
+                                                     Max = "3"
+                                                   })
+                                                 );
 
         }
 
         [Fact]
         public async Task CreateCodeAsync_ShouldCreateTheCode()
         {
+            var fakeDb = new List<VerificationCode>();
 
-            var generatedCode =  GenerateCode.GenerateVerificationCode();
-           
-            var code = new VerificationCode
-            {
-                EmailId = Guid.NewGuid().ToString(),
-                Code = EncryptData.Encrypt(generatedCode),
-                ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds(),
-                IsActive = true,
-            };
+            codeRepo.Setup(repo => repo.CreateAsync(It.IsAny<VerificationCode>(), It.IsAny<CancellationToken>())).
+                     Callback<VerificationCode, CancellationToken>((verificationCode, cancellationToken) =>
+                     {
+                         fakeDb.Add(verificationCode);
+                     }).
+                     Returns(Task.CompletedTask);
 
-            codeRepo.Setup(repo => repo.CreateAsync(code, CancellationToken.None))
-                    .Returns(Task.CompletedTask).Verifiable();
+            await service.CreateCodeAsync(Guid.NewGuid().ToString(), CancellationToken.None);
 
-            await service.CreateCodeAsync(code.EmailId, CancellationToken.None);
+            Assert.Single(fakeDb);
 
-            Assert.NotEqual(generatedCode, code.Code);
-
-            codeRepo.Verify(repo => repo.CreateAsync(It.Is<VerificationCode>(c => c.EmailId == code.EmailId),
-                     It.IsAny<CancellationToken>()), Times.Once);
-
+            codeRepo.Verify(repo => repo.CreateAsync(It.IsAny<VerificationCode>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
-        public async Task VerifyCodeAsync_ShouldReturnUserId_IfCodeIsValid()
+        public async Task VerifyCodeAsync_ShouldReturnAccountId_IfCodeIsValid()
         {
-          
             string codeId = Guid.NewGuid().ToString();
             string codeValue = "123456";
-            string userId = Guid.NewGuid().ToString();
+            string accountId = Guid.NewGuid().ToString();
 
-            codeRepo.Setup(repo => repo.GetAsync(codeId, CancellationToken.None))
-                    .ReturnsAsync(new VerificationResponse
-                    {
-                        Code = EncryptData.Encrypt(codeValue),
-                        IsExpired = false,
-                        UserId = userId
-                    });
-
+            codeRepo.Setup(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new VerificationResponse(
+                                      accountId,
+                                      false,
+                                      EncryptData.Encrypt(codeValue))
+                                 );
+                        
             var result = await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);
 
-            Assert.Equal(userId, result);
-
-            codeRepo.Verify(repo => repo.GetAsync(codeId, It.IsAny<CancellationToken>()), Times.Once);
-
+            Assert.Equal(accountId, result);
+            
+            codeRepo.Verify(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task VerifyCodeAsync_ShouldThrowException_IfCodeIsInvalid()
-        {
-            
+        {   
             string codeId = Guid.NewGuid().ToString();
             string codeValue = "123456";
 
-            codeRepo.Setup(repo => repo.GetAsync(codeId, CancellationToken.None))
-                    .ReturnsAsync((VerificationResponse?)null);
+            codeRepo.Setup(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync((VerificationResponse?)null);
 
-            var ex = await Assert.ThrowsAsync<NoCodeMatchException>(async () =>
-            {
-                await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);
-            });
+            var ex = await Assert.ThrowsAsync<NoCodeMatchException>(async () => {
+                     await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);});
 
             Assert.Equal("Invalid code", ex.Message);
 
-            codeRepo.Verify(repo => repo.GetAsync(codeId, It.IsAny<CancellationToken>()), Times.Once);
-
+            codeRepo.Verify(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task VerifyCodeAsync_ShouldThrowException_IfNoCodeIdMatch()
         {
-           
             string codeId = Guid.NewGuid().ToString();
             string codeValue = "123456";
 
-            codeRepo.Setup(repo => repo.GetAsync(codeId, It.IsAny<CancellationToken>()))
-                  .ReturnsAsync((VerificationResponse?)null);
+            codeRepo.Setup(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync((VerificationResponse?)null);
 
-            var ex = await Assert.ThrowsAsync<NoCodeMatchException>(async () =>
-            {
-                await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);
-            });
+            var ex = await Assert.ThrowsAsync<NoCodeMatchException>(async () => { 
+                     await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);});
 
             Assert.Equal("Invalid code", ex.Message);
-            codeRepo.Verify(repo => repo.GetAsync(codeId, It.IsAny<CancellationToken>()), Times.Once);
 
+            codeRepo.Verify(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task VerifyCodeAsync_ShouldThrowException_IfCodeIsExpired()
         {
-            
             string codeId = Guid.NewGuid().ToString();
             string codeValue = "123456";
 
-            codeRepo.Setup(repo => repo.GetAsync(codeId, CancellationToken.None))
-                    .ReturnsAsync(new VerificationResponse
-                    {
-                        Code = EncryptData.Encrypt(codeValue),
-                        IsExpired = true,
-                        UserId = Guid.NewGuid().ToString()
-                    });
+            codeRepo.Setup(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(new VerificationResponse
+                                      (
+                                        Guid.NewGuid().ToString(),
+                                        true,
+                                        EncryptData.Encrypt(codeValue)
+                                      )
+                                 );
 
-            var ex = await Assert.ThrowsAsync<CodeExpiredException>(async () =>
-            {
-                await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);
-            });
+            var ex = await Assert.ThrowsAsync<CodeExpiredException>(async () => { 
+                     await service.VerifyCodeAsync(codeId, codeValue, CancellationToken.None);});
 
             Assert.Equal("Code has expired, Please request for a new code", ex.Message);
 
-            codeRepo.Verify(repo => repo.GetAsync(codeId, It.IsAny<CancellationToken>()), Times.Once);
-            codeRepo.Verify(repo => repo.UpdateActiveStatusAsync(codeId, It.IsAny<CancellationToken>()), Times.Once);
-
+            codeRepo.Verify(repo => repo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(repo => repo.UpdateActiveStatusAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetPendingCode_ReturnsPendingCodes_IfAny()
         {
-
-            codeRepo.Setup(repo => repo.GetPendingCodes(CancellationToken.None))
-                    .ReturnsAsync(new List<PendingCode>
-                    {
-                        new PendingCode { Id = Guid.NewGuid().ToString(), Code = EncryptData.Encrypt("123456"), Email = "jimmyjabulani01@gmail",
-                            FirstName = "Jimmy", Surname = "Khabana" }
-                    });
+            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>())).
+                     ReturnsAsync(
+                                     [
+                                        new(
+                                             Guid.NewGuid().ToString(),
+                                             EncryptData.Encrypt("123456"),
+                                             "jimmyjabulani01@gmail",
+                                             "Jimmy",
+                                             "Khabana"
+                                           )
+                                     ]
+                                 );
 
             var result = await service.GetPendingCodeAsync(CancellationToken.None);
 
-            Assert.IsType<List<PendingCode>>(result);
+            #pragma warning disable CS8604
+            Assert.IsType<PendingCode>(result.First());
+            #pragma warning restore CS8604
 
             codeRepo.Verify(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>()), Times.Once);
-
         }
 
         [Fact]
         public async Task GetPendingCode_ReturnsNull_IfNoPendingCodes()
         {
-
-            codeRepo.Setup(repo => repo.GetPendingCodes(CancellationToken.None))
+            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>()))
                     .ReturnsAsync((IEnumerable<PendingCode>?)null);
 
             var result = await service.GetPendingCodeAsync(CancellationToken.None);
@@ -181,10 +166,20 @@ namespace AuthApiBackendTest
         }
 
         [Fact]
-        public async Task UpdateCodeAsync()
+        public async Task UpdateCodeAsync_DeactiveTheCode()
         {
+            bool codeStatus = true;
+
+            codeRepo.Setup(c => c.UpdateActiveStatusAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     Callback<string, CancellationToken>((Id, cancellationToken) =>
+                     {
+                        codeStatus = false;
+                     }).
+                     Returns(Task.CompletedTask);
 
             await service.UpdateCodeAsync(Guid.NewGuid().ToString(), CancellationToken.None);
+
+            Assert.False(codeStatus);
 
             codeRepo.Verify(repo => repo.UpdateActiveStatusAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
@@ -192,75 +187,214 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task UpdateEmailSentAsync()
         {
+            bool updateEmailSent = false;
+
+            codeRepo.Setup(c => c.UpdateEmailSentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     Callback<string, CancellationToken>((Id, cancellationToken) =>
+                     {
+                         updateEmailSent = true;
+                     }).
+                     Returns(Task.CompletedTask);
+
             await service.UpdateEmailSentAsync(Guid.NewGuid().ToString(), CancellationToken.None);
+
+            Assert.True(updateEmailSent);
 
             codeRepo.Verify(repo => repo.UpdateEmailSentAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
-       
-
         [Fact]
         public async Task RequestForCode_ThrowsException_IfEmailAlreadyVerified()
         {
-
             codeRepo.Setup(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(true);
 
             var userResponse = new UserResponse
-            {
-                UserId = Guid.NewGuid().ToString(),
-                AttemptCount = 1
-            };
+            (
+                Guid.NewGuid().ToString(),
+                1
+            );
 
-            var ex = await Assert.ThrowsAsync<EmailAlreadyVerifiedException>(async () =>
-            {
-                await service.RequestForCode(userResponse, CancellationToken.None);
-            });
+            var ex = await Assert.ThrowsAsync<EmailAlreadyVerifiedException>(async () => { 
+                     await service.RequestForCode(userResponse, CancellationToken.None);});
 
             Assert.Equal("Email has been sent to your email", ex.Message);
 
             codeRepo.Verify(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
-
+            codeRepo.Verify(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            codeRepo.Verify(c => c.DeactivateOldCode(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public async Task RequestForCode_IfMaxAttemptsNotExceeded()
+        public async Task RequestForCode_IfMaxAttemptsNotExceededAndUserVerificationCodeHistoryErased()
         {
-
             codeRepo.Setup(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                      .ReturnsAsync(false);
 
+            codeRepo.Setup(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync((string?)null);
+
             var userResponse = new UserResponse
-            {
-                UserId = Guid.NewGuid().ToString(),
-                AttemptCount = 1
-            };
+            (
+                Guid.NewGuid().ToString(),
+                0
+            );
 
             await service.RequestForCode(userResponse, CancellationToken.None);
 
+            codeRepo.Verify(c => c.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.DeactivateOldCode(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 
         [Fact]
-        public async Task RequestForCode_ThrowsException_IfMaxAttemptsExceeded()
+        public async Task RequestCode_DeactivatedOldCodes_IfThereExistOtherUserVerificationCodes()
         {
+            var verificationCode = new VerificationCode { Id = Guid.NewGuid().ToString(), IsActive = true };
+            codeRepo.Setup(c => c.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(false);
 
-             codeRepo.Setup(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()))
-                     .ReturnsAsync(false);
+            codeRepo.Setup(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(Guid.NewGuid().ToString());
+
+            codeRepo.Setup(c => c.DeactivateOldCode(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     Callback<string, CancellationToken>((Id, cancellationToken) =>
+                     {
+                         verificationCode.IsActive = false;
+                     }).
+                     Returns(Task.CompletedTask);
 
             var userResponse = new UserResponse
-            {
-                UserId = Guid.NewGuid().ToString(),
-                AttemptCount = 3
-            };
+                                (
+                                   Guid.NewGuid().ToString(),
+                                   1
+                                );
+            
+            await service.RequestForCode(userResponse, CancellationToken.None);
 
-            var ex = await Assert.ThrowsAsync<DailyMaximumAttemptsReachedException>(async () =>
-            {
-                await service.RequestForCode(userResponse, CancellationToken.None);
-            });
+            Assert.False(verificationCode.IsActive);
+
+            codeRepo.Verify(c => c.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.DeactivateOldCode(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+        
+        [Fact]
+        public async Task RequestForCode_ThrowsException_IfMaxAttemptsExceeded()
+        {
+            codeRepo.Setup(repo => repo.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(false);
+
+            var userResponse = new UserResponse
+            (
+                Guid.NewGuid().ToString(),
+                3
+            );
+
+            var ex = await Assert.ThrowsAsync<DailyMaximumAttemptsReachedException>(async () => {
+                     await service.RequestForCode(userResponse, CancellationToken.None);});
 
             Assert.Equal("Maximum attempt reached. Please try again later", ex.Message);
 
+            codeRepo.Verify(c => c.IsUserEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetCodeId(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+            codeRepo.Verify(c => c.DeactivateOldCode(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        }
+
+        [Fact]
+        public async Task ExpiredVerificationCodes_ReturnsExpiredVerificationCodes_IfAny()
+        {
+            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>())).
+                     ReturnsAsync(
+                                  [
+                                    new()
+                                         {
+                                            Id = Guid.NewGuid().ToString(),
+                                         }
+                                  ]
+                                 );
+
+            var expiredCodes = await service.ExpiredVerificationCodes(CancellationToken.None);
+
+            #pragma warning disable CS8604
+            Assert.IsType<VerificationCode>(expiredCodes.First());
+            #pragma warning restore CS8604
+
+            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task ExpiredVerificationCodes_ReturnsNull_IfNone()
+        {
+            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>())).
+                     ReturnsAsync((List<VerificationCode>?)null);
+
+            var expiredCodes = await service.ExpiredVerificationCodes(CancellationToken.None);
+
+            Assert.Null(expiredCodes);
+
+            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RemoveCodes_PermanentlyRemoveCodes_IfAny()
+        {
+            var oldVerificationCode = new VerificationCode { Id = Guid.NewGuid().ToString() };
+
+            var fakeDb = new List<VerificationCode>
+            {
+                oldVerificationCode
+            };
+
+            codeRepo.Setup(c => c.DeleteCodes(It.IsAny<VerificationCode>(), It.IsAny<CancellationToken>())).
+                     Callback<VerificationCode, CancellationToken>((verificationCode, cancellationToken) =>
+                     {
+                         fakeDb.Remove(verificationCode);
+                     }).
+                     Returns(Task.CompletedTask);
+
+            await service.RemoveCodes(oldVerificationCode, CancellationToken.None);
+
+            Assert.Empty(fakeDb);
+
+            codeRepo.Verify(c => c.DeleteCodes(It.IsAny<VerificationCode>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RetrieveUsedCodes_ReturnUsedCodes_IfAny()
+        {
+            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>())).
+                     ReturnsAsync(
+                                    [
+                                       new()
+                                           {
+                                              Id = Guid.NewGuid().ToString(),
+                                           }
+                                    ]
+                                 );
+
+            var usedCodes = await service.RetrieveUsedCodes(It.IsAny<CancellationToken>());
+
+            #pragma warning disable CS8604
+            Assert.IsType<VerificationCode>(usedCodes.First());
+            #pragma warning restore CS8604
+
+            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task RetrieveUsedCodes_ReturnNull_IfNone()
+        {
+            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>())).
+                     ReturnsAsync((List<VerificationCode>?)null);
+
+            var usedCodes = await service.RetrieveUsedCodes(It.IsAny<CancellationToken>());
+
+            Assert.Null(usedCodes);
+
+            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>()), Times.Once);
         }
 
     }
+
 }

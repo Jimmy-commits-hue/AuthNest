@@ -3,6 +3,7 @@ using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Exceptions.ExceptionTypes;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
+using AuthApiBackend.Models;
 using AuthApiBackend.Utilities;
 using Microsoft.Extensions.Options;
 
@@ -21,12 +22,11 @@ namespace AuthApiBackend.Services
             max = option.Value;
         }
 
-        public async Task CreateCodeAsync(string userId, CancellationToken cancellationToken, int attemptCount = 1)
-        {
-           
-            var code = new Models.VerificationCode
+        public async Task CreateCodeAsync(string accountId, CancellationToken cancellationToken, int attemptCount = 1)
+        { 
+            var code = new VerificationCode
             {
-                EmailId = userId,
+                EmailId = accountId,
                 Code = EncryptData.Encrypt(GenerateCode.GenerateVerificationCode()),
                 ExpiresAt = DateTimeOffset.UtcNow.AddMinutes(10).ToUnixTimeSeconds(),
                 AttemptCount = attemptCount,
@@ -34,7 +34,6 @@ namespace AuthApiBackend.Services
             };
 
             await codeRepo.CreateAsync(code, cancellationToken);
-
         }
 
         public async Task<string> VerifyCodeAsync(string codeId, string code, CancellationToken cancellationToken)
@@ -76,11 +75,18 @@ namespace AuthApiBackend.Services
 
             if (attemptCount > int.Parse(max.Max))
             {
-               throw new DailyMaximumAttemptsReachedException("Maximum attempt reached. Please try again later");
+                throw new DailyMaximumAttemptsReachedException("Maximum attempt reached. Please try again later");
+            }
+
+            string? codeId = await codeRepo.GetCodeId(userAttemptsAndUserId.UserId, cancellationToken);
+
+            if(userAttemptsAndUserId.AttemptCount < int.Parse(max.Max) && codeId != null)
+            {
+                await codeRepo.DeactivateOldCode(codeId, cancellationToken);
             }
 
             await CreateCodeAsync(userAttemptsAndUserId.UserId, cancellationToken, attemptCount);
-            
+
         }
 
         public async Task UpdateCodeAsync(string codeId, CancellationToken cancellationToken)
@@ -89,8 +95,23 @@ namespace AuthApiBackend.Services
         }
 
         public async Task UpdateEmailSentAsync(string codeId, CancellationToken cancellationToken)
-        { 
+        {
             await codeRepo.UpdateEmailSentAsync(codeId, cancellationToken);
+        }
+
+        public async Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(CancellationToken cancellationToken)
+        {
+            return await codeRepo.GetExpiredVericationCodes(cancellationToken);
+        }
+
+        public async Task RemoveCodes(VerificationCode code, CancellationToken cancellationToken)
+        {
+            await codeRepo.DeleteCodes(code, cancellationToken);
+        }
+
+        public async Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(CancellationToken cancellationToken)
+        {
+            return await codeRepo.GetAllUsedVerificationCodes(cancellationToken);
         }
 
     }

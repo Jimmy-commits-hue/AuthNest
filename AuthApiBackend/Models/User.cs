@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using Newtonsoft.Json;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace AuthApiBackend.Models
@@ -12,7 +13,7 @@ namespace AuthApiBackend.Models
 
         public string IdNumber { get; set; } = string.Empty;
 
-        public string FirstName { get; set; } = null!;
+        public string FirstName { get; set; } = string.Empty;
 
         public string Surname { get; set; } = null!;
 

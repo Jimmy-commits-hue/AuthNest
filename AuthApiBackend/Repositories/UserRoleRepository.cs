@@ -5,32 +5,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace AuthApiBackend.Repositories
 {
-    public class UserRoleRepository(AuthApiDbContext context) : IUserRoleRepository
+    public class UserRoleRepository(AuthApiDbContext db) : IUserRoleRepository
     {
 
         public async Task CreateAsync(UserRole userRole, CancellationToken cancellationToken)
         {
-
-            context.UserRole.Add(userRole);
-            await context.SaveChangesAsync(cancellationToken);
-
+            db.UserRole.Add(userRole);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<int?> GetAsync(string userId, CancellationToken cancellationToken)
+        public async Task<int?> GetAsync(string userRoleId, CancellationToken cancellationToken)
         {
-
-            return await context.UserRole.AsNoTracking().Where(u => u.UserId.CompareTo(userId) == 0).
-                                 Select(u => u.RoleId).FirstOrDefaultAsync(cancellationToken);
-
+            return await db.UserRole.AsNoTracking().
+                         Where(u => u.Id == userRoleId).
+                         Select(u => u.RoleId).
+                         FirstOrDefaultAsync(cancellationToken);
         }
 
         public async Task UpdateAsync(UserRole userRole, CancellationToken cancellationToken)
         {
-
-            context.UserRole.Update(userRole);
-            await context.SaveChangesAsync(cancellationToken);
-
+            db.UserRole.Update(userRole);
+            await db.SaveChangesAsync(cancellationToken);
         }
 
     }
+
 }

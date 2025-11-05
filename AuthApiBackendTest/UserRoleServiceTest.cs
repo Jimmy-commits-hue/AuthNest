@@ -5,6 +5,7 @@ using AuthApiBackend.Interfaces.IRepositories;
 
 namespace AuthApiBackendTest
 {
+
     public class UserRoleServiceTest
     {
 
@@ -26,15 +27,17 @@ namespace AuthApiBackendTest
             var userRole = new UserRole
             {
                 RoleId = roleId,
-                UserId = userId,
+                Id = userId,
             };
 
-            userRoleRepo.Setup(userRoleRepo => userRoleRepo.CreateAsync(userRole, CancellationToken.None))
-                       .Returns(Task.CompletedTask);
+            userRoleRepo.Setup(userRoleRepo => userRoleRepo.CreateAsync(It.IsAny<UserRole>(), It.IsAny<CancellationToken>())).
+                         Returns(Task.CompletedTask);
 
             await userRoleService.CreateUserRoleAsync(roleId, userId, CancellationToken.None);
 
-            userRoleRepo.Verify(userRoleRepo => userRoleRepo.CreateAsync(It.IsAny<UserRole>(), CancellationToken.None), Times.Once);
+            userRoleRepo.Verify(userRoleRepo => userRoleRepo.CreateAsync(It.IsAny<UserRole>(), It.IsAny<CancellationToken>()), Times.Once);
         }
+
     }
+
 }

@@ -1,5 +1,7 @@
 ﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.DTOs.ResponseDtos;
+using AuthApiBackend.Models;
+using Microsoft.AspNetCore.JsonPatch;
 
 namespace AuthApiBackend.Interfaces.IServices
 {
@@ -12,6 +14,13 @@ namespace AuthApiBackend.Interfaces.IServices
         Task<UserResponse> GetUserIdAsync(string idNumber, CancellationToken cancellationToken);
 
         Task FindUserLoginNumberById(string nationalId, CancellationToken cancellationToken);
+
+        Task UpdateUserPartially(string Id, JsonPatchDocument<UserPatchDetails> userPatch, UserPatchDetails patch,
+            CancellationToken cancellationToken);
+
+        Task<string> GetUserPkById(string userId, CancellationToken cancellationToken);
+
+        Task DeleteUser(User user, CancellationToken cancellationToken);
 
     }
 

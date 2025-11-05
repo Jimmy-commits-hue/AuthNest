@@ -3,6 +3,7 @@ using AuthApiBackend.Models;
 using AuthApiBackend.Exceptions.ExceptionTypes;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
+using AuthApiBackend.Utilities;
 
 namespace AuthApiBackend.Services
 {
@@ -11,8 +12,9 @@ namespace AuthApiBackend.Services
 
         public async Task CreateRoleAsync(RoleDto role, CancellationToken cancellationToken)
         {
+            var roleFormat = RoleFormat.Format(role.RoleName.ToString());
 
-            var roleExist = await roleRepo.GetAsync(role.RoleName, cancellationToken);
+            var roleExist = await roleRepo.GetAsync(roleFormat, cancellationToken);
 
             if(roleExist is not 0)
                throw new RoleAlreadyExistException($"{role.RoleName} role already exist");
@@ -20,27 +22,26 @@ namespace AuthApiBackend.Services
             await roleRepo.CreateAsync(new Role
             {
 
-                RoleName = role.RoleName,
+                RoleName = roleFormat,
 
             }, cancellationToken);
 
         }
 
-        public async Task<int> GetRoleAsync(string role, CancellationToken cancellationToken) 
+        public async Task<int> GetRoleId(string role, CancellationToken cancellationToken) 
         {
-
-            return await roleRepo.GetAsync(role, cancellationToken) ?? 
+            return await roleRepo.GetAsync(RoleFormat.Format(role), cancellationToken) ?? 
                    throw new NoRoleMatchException($"No role match for {role}");
-
         }
 
-        //not complete
-        public async Task UpdateRoleAsync(string role, string newRole, CancellationToken cancellationToken)
+        public async Task<Role> GetRole(int roleId, CancellationToken cancellationToken)
         {
+            return await roleRepo.GetRole(roleId, cancellationToken);
+        }
 
-            _ = await roleRepo.GetAsync(role, cancellationToken) ??
-                 throw new NoRoleMatchException($"Failed to update. Role {role} does not exist");
-
+        public async Task DeleteRole(Role role, CancellationToken cancellationToken)
+        {
+            await roleRepo.DeleteAsync(role, cancellationToken);
         }
         
     }

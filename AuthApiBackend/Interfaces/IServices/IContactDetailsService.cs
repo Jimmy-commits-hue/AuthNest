@@ -11,6 +11,8 @@ namespace AuthApiBackend.Interfaces.IServices
         Task<ContactDetails> GetUserContactDetails(string email, CancellationToken cancellationToken);
 
         Task UpdateIsEmailVerified(string userId, CancellationToken cancellationToken);
+
+        Task UpdateEmail(string accountId, string email, CancellationToken cancellationToken);
     }
 
 }

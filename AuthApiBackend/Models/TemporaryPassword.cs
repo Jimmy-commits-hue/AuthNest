@@ -1,8 +1,4 @@
-﻿using Newtonsoft.Json;
-using System.ComponentModel.DataAnnotations;
-using System.ComponentModel.DataAnnotations.Schema;
-
-using System.Text.Json;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace AuthApiBackend.Models
 {
@@ -19,12 +15,21 @@ namespace AuthApiBackend.Models
 
         public string HashedPassword { get; set; } = null!;
 
-        public bool IsActive { get; set; } = true;
+        public int AttemptCount { get; set; }
 
         public bool IsEmailSent { get; set; }
 
-        public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;
+        public long ExpiresAt { get; set; }
 
+        public bool IsActive { get; set; }
+
+        public bool IsExpired
+        {
+            get
+            {
+                return DateTimeOffset.UtcNow.ToUnixTimeSeconds() > ExpiresAt;
+            }
+        }
     }
 
 }

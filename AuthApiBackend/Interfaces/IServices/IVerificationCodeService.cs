@@ -1,4 +1,5 @@
 ﻿using AuthApiBackend.DTOs.ResponseDtos;
+using AuthApiBackend.Models;
 using System.Threading;
 
 namespace AuthApiBackend.Interfaces.IServices
@@ -16,5 +17,11 @@ namespace AuthApiBackend.Interfaces.IServices
         Task UpdateCodeAsync(string codeId, CancellationToken cancellationToken);
 
         Task UpdateEmailSentAsync(string codeId, CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(CancellationToken cancellationToken);
+
+        Task RemoveCodes(VerificationCode code, CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(CancellationToken cancellationToken);
     }
 }

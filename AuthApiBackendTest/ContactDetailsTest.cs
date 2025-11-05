@@ -21,22 +21,25 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task CreateUserContactDetails_ShouldCreateContactDetails()
         {
-
             string userId = Guid.NewGuid().ToString();
             string email = "jimmyjabulani01@gmail.com";
 
-            var UserContactDetails = new ContactDetails
-            {
-                UserId = userId,
-                Email = email,
-            };
+            var fakeDb = new List<ContactDetails>();
 
-            contactRepo.Setup(contactRepo => contactRepo.CreateAsync(UserContactDetails, CancellationToken.None))
-                       .Returns(Task.CompletedTask);
+            contactRepo.Setup(contactRepo => contactRepo.CreateAsync(It.IsAny<ContactDetails>(), It.IsAny<CancellationToken>())).
+                        Callback<ContactDetails, CancellationToken>((newContact, cancellationToken) =>
+                        {
+                            fakeDb.Add(newContact);
+                        }).
+                        Returns(Task.CompletedTask);
 
             await contactDetailsService.CreateUserContactDetails(userId, email, CancellationToken.None);
 
-            contactRepo.Verify(contactRepo => contactRepo.CreateAsync(It.IsAny<ContactDetails>(), CancellationToken.None), Times.Once);
+            Assert.Single(fakeDb);
+            Assert.Equal(userId, fakeDb.First().Id);
+            Assert.Equal(email, fakeDb.First().Email);
+
+            contactRepo.Verify(contactRepo => contactRepo.CreateAsync(It.IsAny<ContactDetails>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -47,11 +50,11 @@ namespace AuthApiBackendTest
 
             var existingContactDetails = new ContactDetails
             {
-                UserId = userId,
+                Id = userId,
                 Email = email,
             };
 
-            contactRepo.Setup(contactRepo => contactRepo.GetAsync(userId, CancellationToken.None))
+            contactRepo.Setup(contactRepo => contactRepo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()))
                        .ReturnsAsync(existingContactDetails);
 
             var result = await contactDetailsService.GetUserContactDetails(userId, CancellationToken.None);
@@ -59,32 +62,52 @@ namespace AuthApiBackendTest
             Assert.NotNull(result);
             Assert.IsType<ContactDetails>(result);
 
-            contactRepo.Verify(contactRepo => contactRepo.GetAsync(userId, CancellationToken.None), Times.Once);
+            contactRepo.Verify(contactRepo => contactRepo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task UpdateIsEmailVerified_ShouldUpdateEmailVerificationStatus()
         {
+            string contactId = Guid.NewGuid().ToString();
 
-            string userId = Guid.NewGuid().ToString();
+            bool isEmailVerified = false;
+            bool isVerified = true;
 
-            var existingContactDetails = new ContactDetails
-            {
-                UserId = userId,
-                Email = "jimmyjabulani01@gmail.com",
-                IsEmailVerified = false,
-            };
+            contactRepo.Setup(contactRepo => contactRepo.UpdateIsEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                        Callback<string, CancellationToken>((Id, CancellationToken) =>
+                        {
+                            isEmailVerified = isVerified;
+                        }).
+                        Returns(Task.CompletedTask);
 
-            contactRepo.Setup(contactRepo => contactRepo.CreateAsync(existingContactDetails, CancellationToken.None))
-                       .Returns(Task.CompletedTask);
+            await contactDetailsService.UpdateIsEmailVerified(contactId, CancellationToken.None);
 
-            contactRepo.Setup(contactRepo => contactRepo.UpdateIsEmailVerified(userId, CancellationToken.None))
-                       .Returns(Task.CompletedTask);
+            Assert.Equal(isVerified, isEmailVerified);
 
-            await contactDetailsService.UpdateIsEmailVerified(userId, CancellationToken.None);
-
-            contactRepo.Verify(contactRepo => contactRepo.UpdateIsEmailVerified(userId, CancellationToken.None), Times.Once);
-
+            contactRepo.Verify(contactRepo => contactRepo.UpdateIsEmailVerified(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
+
+        [Fact]
+        public async Task UpdateEmail_ReplacesOldEmailWithNewEmail()
+        {
+            string storedEmail = "jimmyjabulani01@gmail.com";
+            string newEmail = "jabulanikhabana0@gmail.com";
+            string accountId = Guid.NewGuid().ToString();
+
+            contactRepo.Setup(c => c.UpdateEmail(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                        Callback<string, string, CancellationToken>((id, email, token) =>
+                        {
+                            storedEmail = email;
+                        }).
+                        Returns(Task.CompletedTask);
+
+            await contactDetailsService.UpdateEmail(accountId, newEmail, CancellationToken.None);
+
+            Assert.Equal(newEmail, storedEmail);
+
+            contactRepo.Verify(c => c.UpdateEmail(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+        }
+
     }
+
 }

@@ -8,14 +8,12 @@ namespace AuthApiBackend.Interfaces.IServices
     {
 
         Task CreateRoleAsync(RoleDto roleDto, CancellationToken cancellationToken);
-        
-        Task UpdateRoleAsync(string role, string newRole, CancellationToken cancellationToken);
 
-        Task<int> GetRoleAsync(string role, CancellationToken cancellationToken);
+        Task<int> GetRoleId(string role, CancellationToken cancellationToken);
 
-       // Task<IEnumerable<Role>> GetAllRolesAsync(CancellationToken cancellationToken);
-        
-       // Task DeleteRoleAsync(string role, CancellationToken cancellationToken);
+        Task<Role> GetRole(int roleId, CancellationToken cancellationToken);
+
+        Task DeleteRole(Role role, CancellationToken cancellationToken);
 
     }
 
