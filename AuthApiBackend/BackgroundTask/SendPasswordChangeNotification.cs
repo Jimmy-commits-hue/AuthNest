@@ -6,7 +6,7 @@ using AuthApiBackend.Utilities;
 
 namespace AuthApiBackend.BackgroundTask
 {
-
+    
     public class SendPasswordChangeNotification : BackgroundService
     {
 

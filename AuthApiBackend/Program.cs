@@ -2,6 +2,7 @@ using AuthApiBackend.Configurations;
 using AuthApiBackend.Database;
 using AuthApiBackend.Exceptions;
 using AuthApiBackend.RegisterServices;
+using AuthApiBackend.Security;
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
@@ -35,18 +36,34 @@ try
     });
 
     builder.Services.OathServiceMiddleware();
-
     builder.Services.AddServiceCollection();
+    builder.Services.AddVerifyJWT(builder.Configuration);
 
     //Binding appsettingsjson to Dtos
     builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetRequiredSection("connectionString"));
     builder.Services.Configure<EmailConfig>(builder.Configuration.GetRequiredSection("EmailConfig"));
     builder.Services.Configure<MaxAttemptsConfig>(builder.Configuration.GetRequiredSection("MaxAttempts"));
+    builder.Services.Configure<JwtConfig>(builder.Configuration.GetRequiredSection("JWT"));
+
+    var jwt = builder.Configuration.GetSection("JWT").Get<JwtConfig>();
 
     builder.Services.AddDbContext<AuthApiDbContext>();
 
     builder.Services.AddSingleton<IExceptionHandler, ExceptionsGlobalHandler>();
     builder.Services.AddSingleton<IExceptionHandler, UnknownExceptionHandler>();
+    
+    builder.Services.AddAuthorization(options =>
+    {
+        options.AddPolicy("Admin", policy =>
+        {
+            policy.RequireRole("Admin");
+        });
+
+        options.AddPolicy("User", policy =>
+        {
+            policy.RequireRole("User");
+        });
+    });
 
     var app = builder.Build();
 

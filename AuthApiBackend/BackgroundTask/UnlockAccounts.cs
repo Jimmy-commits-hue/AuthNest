@@ -6,6 +6,7 @@ using AuthApiBackend.Interfaces.IServices.ISendNotification;
 
 namespace AuthApiBackend.BackgroundTask
 {
+
     public class UnlockAccounts : BackgroundService
     {
 

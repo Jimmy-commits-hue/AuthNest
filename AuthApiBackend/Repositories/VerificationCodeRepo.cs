@@ -93,7 +93,7 @@ namespace AuthApiBackend.Repositories
             long dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             return await db.VerificationCode.AsNoTracking().
-                   Where(c => c.IsExpired).ToListAsync(cancellationToken);
+                   Where(c => c.IsActive == true && c.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ToListAsync(cancellationToken);
         }
 
         public async Task DeleteCodes(VerificationCode code, CancellationToken cancellationToken)

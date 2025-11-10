@@ -25,8 +25,6 @@ namespace AuthApiBackend.Models
 
         public Account? Account { get; set; }
 
-        public ICollection<RefreshTokens> RefreshTokens { get; set; } = new HashSet<RefreshTokens>();
-
     }
 
 }

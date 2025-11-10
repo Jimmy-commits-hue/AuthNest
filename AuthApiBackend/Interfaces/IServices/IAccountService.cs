@@ -14,6 +14,7 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task UpdateIsEmailSent(string accountId, CancellationToken cancellationToken);
 
+        Task<AccountResponse> GetAccountUserDeatailsUponLogin(string accountId, CancellationToken cancellationToken);
         Task<string> VerifyLoginNumber(string loginNumber, CancellationToken cancellationToken);
 
         Task<int> VerifyAccountStatus(string loginNumber, CancellationToken cancellationToken);

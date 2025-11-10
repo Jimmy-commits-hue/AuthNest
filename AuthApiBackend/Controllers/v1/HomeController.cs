@@ -10,6 +10,8 @@ using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.V1
 {
+
+    [AllowAnonymous]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
 
@@ -105,7 +107,6 @@ namespace AuthApiBackend.Controllers.V1
         public async Task<IActionResult> RetrieveLoginNumber([FromBody] string nationalId, CancellationToken cancellationToken
             , IUserService userService)
         {
-
             await userService.FindUserLoginNumberById(nationalId, cancellationToken);
 
             return Ok(new { Message = "An email has been sent to ******@gmail.com" });

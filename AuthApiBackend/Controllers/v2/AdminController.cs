@@ -1,6 +1,7 @@
 ﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace AuthApiBackend.Controllers.V2
 {
 
+    [Authorize(Policy = "Admin")]
     [Route("api/v{version:apiversion}/[controller]")]
     [ApiController]
     public class AdminController : ControllerBase
