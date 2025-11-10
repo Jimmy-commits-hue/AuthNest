@@ -85,10 +85,10 @@ namespace AuthApiBackend.Repositories
 
         public async Task<IEnumerable<TemporaryPassword>?> GetExpiredCodes(CancellationToken cancellationToken)
         {
-            return await db.TemporaryPassword.AsNoTracking().
-                         Where(u => u.IsExpired).
-                         Select(u => u).
-                         ToListAsync(cancellationToken);
+            return await db.TemporaryPassword
+                         .AsNoTracking()
+                         .Where(u => u.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                         .ToListAsync(cancellationToken);
         }
 
         public async Task<IEnumerable<TemporaryPassword>?> GetUsedCodes(CancellationToken cancellationToken)

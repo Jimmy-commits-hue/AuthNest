@@ -1,12 +1,15 @@
 ﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 
 
 namespace AuthApiBackend.Controllers.V3
 {
+
+    [Authorize(Policy = "User")]
     [Route("api/v{version:apiversion}/[controller]")]
     [ApiController]
     public class UserController : ControllerBase
@@ -81,6 +84,15 @@ namespace AuthApiBackend.Controllers.V3
             await cancel.CancelAccountDeletion(login, cancellationToken);
 
             return Ok(new { Message = "Account retrieved" });
+        }
+
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(ILogoutOperation logout,
+            CancellationToken cancellationToken)
+        {
+            await logout.Logout(cancellationToken);
+
+            return Ok(new { Message = "Logged out successfully" });
         }
     }
 }

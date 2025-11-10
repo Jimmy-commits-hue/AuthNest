@@ -30,6 +30,30 @@ namespace AuthApiBackend.RegisterServices
 
                 }
 
+                options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+                {
+                    Name = "token", // this is your cookie name
+                    Type = SecuritySchemeType.ApiKey,
+                    In = ParameterLocation.Cookie,
+                    Description = "JWT token stored in HttpOnly cookie named 'token'."
+                });
+
+                // ✅ Add requirement globally
+                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                In = ParameterLocation.Cookie
+            },
+            new string[] {}
+        }
+    });
             });
 
             return services;

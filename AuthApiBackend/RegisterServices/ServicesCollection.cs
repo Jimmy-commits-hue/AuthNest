@@ -6,6 +6,7 @@ using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Repositories;
+using AuthApiBackend.Security;
 using AuthApiBackend.Services;
 using AuthApiBackend.Services.Operations;
 using Microsoft.AspNetCore.Mvc.Versioning;
@@ -27,9 +28,12 @@ namespace AuthApiBackend.RegisterServices
             Services.AddScoped<IVerificationCodeService, VerificationCodeService>();
             Services.AddScoped<IAccountService, AccountService>();
             Services.AddScoped<ITemporaryPasswordService, TemporaryPasswordService>();
+            Services.AddScoped<IBlackListedTokenService, BlackListedTokenService>();
+            Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
             //Transient Services
             Services.AddTransient<INotification, Notification>();
+            Services.AddSingleton<GenerateJwtToken>();
 
             //Repositories
             Services.AddScoped<IContactDetailsRepo, ContactDetailsRepo>();
@@ -38,7 +42,9 @@ namespace AuthApiBackend.RegisterServices
             Services.AddScoped<IUserRoleRepository, UserRoleRepository>();
             Services.AddScoped<IVerificationCodeRepo, VerificationCodeRepo>();
             Services.AddScoped<IAccountRepository, AccountRepository>();
-            Services.AddScoped<ITemporaryPasswordRepo,  TemporaryPasswordRepo>();
+            Services.AddScoped<ITemporaryPasswordRepo, TemporaryPasswordRepo>();
+            Services.AddScoped<IRefreshTokenRepo, RefreshTokenRepo>();
+            Services.AddScoped<IBlackListedTokenRepo, BlackListedTokenRepo>();
 
             //HostedServices
             Services.AddHostedService<BackgroundTask.SendVerificationCodeNotification>();
@@ -47,8 +53,8 @@ namespace AuthApiBackend.RegisterServices
             Services.AddHostedService<BackgroundTask.SendForgettenLoginNumber>();
             Services.AddHostedService<BackgroundTask.UnlockAccounts>();
             Services.AddHostedService<BackgroundTask.PermanentDeleteAccounts>();
-            //Services.AddHostedService<BackgroundTask.CleanExpiredCodes>();
-            //Services.AddHostedService<BackgroundTask.CleanUsedCodes>();
+            Services.AddHostedService<BackgroundTask.CleanExpiredCodes>();
+            Services.AddHostedService<BackgroundTask.CleanUsedCodes>();
 
             //HttpContextAccessor Service
             Services.AddHttpContextAccessor();
@@ -74,7 +80,8 @@ namespace AuthApiBackend.RegisterServices
             Services.AddScoped<IResetPassword, ResetPassword>();
             Services.AddScoped<IResetPasswordRequest, ResetPasswordRequest>();
             Services.AddScoped<ICancelDeletion, CancelDeletion>();
-            Services.AddScoped<IDeleteRole,  DeleteRole>();
+            Services.AddScoped<IDeleteRole, DeleteRole>();
+            Services.AddScoped<ILogoutOperation, LogoutOperation>();
 
             Services.AddVersionedApiExplorer(options =>
             {

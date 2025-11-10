@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 
 namespace AuthApiBackend.Database
 {
+
     public class AuthApiDbContext : DbContext
     {
             public DbSet<User> User { get; set; }
@@ -15,13 +16,15 @@ namespace AuthApiBackend.Database
 
             public DbSet<VerificationCode> VerificationCode { get; set; }
 
-            public DbSet<RefreshTokens> RefreshToken { get; set; }
-
             public DbSet<Role> Role { get; set; }
 
             public DbSet<UserRole> UserRole { get; set; }
 
             public DbSet<TemporaryPassword> TemporaryPassword { get; set; }
+
+            public DbSet<RefreshToken> RefreshToken { get; set; }
+
+            public DbSet<BlackListedToken> BlackListedToken { get; set; }
 
             private readonly DatabaseSettings _settings;
 
@@ -32,10 +35,8 @@ namespace AuthApiBackend.Database
 
             protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
             {
-
                 if (!optionsBuilder.IsConfigured)
                 {
-
                     string Password = Environment.GetEnvironmentVariable("DB_PASSWORD")!;
                     string password = Password.Split('\\')[1];
 
@@ -46,11 +47,11 @@ namespace AuthApiBackend.Database
 
                     base.OnConfiguring(optionsBuilder);
                 }
-
             }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
+                modelBuilder.Entity<BlackListedToken>().HasKey(u => u.Id);
 
                 modelBuilder.Entity<User>().HasIndex(u => u.Id).IsUnique();
 
@@ -63,7 +64,7 @@ namespace AuthApiBackend.Database
                 modelBuilder.Entity<ContactDetails>().HasMany(u => u.VerificationCode).WithOne(u => u.ContactDetails).HasForeignKey(u => u.EmailId).
                                             OnDelete(DeleteBehavior.Cascade);
 
-                modelBuilder.Entity<User>().HasMany(u => u.RefreshTokens).WithOne(u => u.User).HasForeignKey(u => u.UserId).
+                modelBuilder.Entity<Account>().HasMany(u => u.RefreshTokens).WithOne(u => u.Account).HasForeignKey(u => u.AccountId).
                                            OnDelete(DeleteBehavior.Cascade);
 
                 modelBuilder.Entity<Role>().HasMany(u => u.UserRole).WithOne(u => u.Role).HasForeignKey(u => u.RoleId).
@@ -78,5 +79,7 @@ namespace AuthApiBackend.Database
                 base.OnModelCreating(modelBuilder);
 
             }
+
     }
+
 }

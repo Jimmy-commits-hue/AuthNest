@@ -4,16 +4,17 @@ using AuthApiBackend.Models;
 
 namespace AuthApiBackend.BackgroundTask
 {
-    /*
+    
     public class CleanUsedCodes : BackgroundService
     {
 
         private readonly IServiceProvider serviceProvider;
         private readonly TimeSpan timer = TimeSpan.FromMinutes(1);
-
-        public CleanUsedCodes(IServiceProvider serviceProvider)
+        private ILogger<CleanUsedCodes> logger;
+        public CleanUsedCodes(IServiceProvider serviceProvider, ILogger<CleanUsedCodes> logger)
         {
-           this.serviceProvider = serviceProvider;    
+           this.serviceProvider = serviceProvider;
+            this.logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
@@ -27,18 +28,20 @@ namespace AuthApiBackend.BackgroundTask
                     var tempPasswordService = scope.ServiceProvider.GetRequiredService<ITemporaryPasswordService>();
 
                     IEnumerable<VerificationCode>? usedCode = await codeService.RetrieveUsedCodes(stoppingToken);
+
                     IEnumerable<TemporaryPassword>? usedTempCodes = await tempPasswordService.RetrieveUsedCodes(stoppingToken);
 
-                    if(usedCode is not null)
+
+                    if (usedCode is not null)
                     {
                         foreach (var code in usedCode)
                         {
                             await codeService.RemoveCodes(code, stoppingToken);
                         }
-                        
+
                     }
 
-                    if(usedTempCodes is not null)
+                    if (usedTempCodes is not null)
                     {
                         foreach (var tempCode in usedTempCodes)
                         {
@@ -52,6 +55,6 @@ namespace AuthApiBackend.BackgroundTask
 
         }
 
-    }*/
+    }
 
 }

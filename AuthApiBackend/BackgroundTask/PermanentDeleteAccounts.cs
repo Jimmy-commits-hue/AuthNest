@@ -3,7 +3,7 @@ using AuthApiBackend.Models;
 
 namespace AuthApiBackend.BackgroundTask
 {
-
+    
     public class PermanentDeleteAccounts : BackgroundService
     {
         

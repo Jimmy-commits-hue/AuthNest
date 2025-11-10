@@ -10,7 +10,6 @@ namespace AuthApiBackend.Utilities
         
         public static string HashId(string id)
         {
-
             byte[] keybytes = Convert.FromBase64String(Environment.GetEnvironmentVariable("JWT_KEY")!);
 
             byte[] databytes = Encoding.UTF8.GetBytes(id);
@@ -21,25 +20,20 @@ namespace AuthApiBackend.Utilities
 
                 return BitConverter.ToString(hashedDataBytes).Replace("-", "").ToLowerInvariant();
             }
-
         }
 
         public static string Hash(string password)
         {
-
             return new PasswordHasher<string>().HashPassword(Environment.GetEnvironmentVariable("SECRET_KEY")!
                                                              , password);
-
         }
 
         public static PasswordVerificationResult VerifyHash(string hashedPassword, string password)
         {
-
             return new PasswordHasher<string>().VerifyHashedPassword(Environment.GetEnvironmentVariable("SECRET_KEY")!
                                                                      , hashedPassword, password);
-
         }
 
     }
 
-}
+} 

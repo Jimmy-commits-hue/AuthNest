@@ -218,6 +218,11 @@ namespace AuthApiBackend.Services
             return await accountRepo.GetAllDeletedAccounts(cancellationToken);
         }
 
+        public async Task<AccountResponse> GetAccountUserDeatailsUponLogin(string accountId, CancellationToken cancellationToken)
+        {
+            return await accountRepo.GetAccountDetailsUponLogin(accountId, cancellationToken);
+        }
+
     }
 
 }

@@ -245,6 +245,17 @@ namespace AuthApiBackend.Repositories
                          Select(u => u.User).ToListAsync(cancellationToken);
         }
 
+        public async Task<AccountResponse> GetAccountDetailsUponLogin(string accountdId, CancellationToken cancellationToken)
+        {
+            return await db.Account.AsNoTracking().
+                         Where(c => c.Id == accountdId).
+                         Select(c => new AccountResponse(
+                                     c.User.FirstName,
+                                     c.User.Surname,
+                                     c.User.UserRole.Role.RoleName
+                               )).FirstAsync(cancellationToken);
+        }
+
     }
 
 }

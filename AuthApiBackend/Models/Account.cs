@@ -42,7 +42,9 @@ namespace AuthApiBackend.Models
 
         public long ExpectedDeleteDate { get; set; } 
 
-        public ICollection<TemporaryPassword> TemporaryPassword { get; set; } = new List<TemporaryPassword>();
+        public ICollection<TemporaryPassword> TemporaryPassword { get; set; } = [];
+
+        public ICollection<RefreshToken> RefreshTokens { get; set; } = [];
     }
 
 }
