@@ -16,8 +16,19 @@ namespace AuthApiBackend.Services
                 AccountId = accountId,
                 ExpiresAt = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
                 Id = Guid.NewGuid().ToString(),
-                Token = EncryptData.Encrypt(token)
+                Token = HashHelper.HashId(token)
             }, cancellationToken);
+        }
+
+        public async Task<RefreshToken> GetRefreshToken(string token, CancellationToken cancellationToken)
+        {
+            var encryptedToken = HashHelper.HashId(token);
+            return await refreshTokenRepo.GetToken(encryptedToken, cancellationToken);
+        }
+
+        public async Task DeleteRefreshToken(RefreshToken refreshToken, CancellationToken cancellationToken)
+        {
+            await refreshTokenRepo.DeleteToken(refreshToken, cancellationToken);
         }
 
     }

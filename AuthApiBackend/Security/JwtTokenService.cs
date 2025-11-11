@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Authentication.JwtBearer;
+﻿using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 
@@ -10,7 +11,6 @@ namespace AuthApiBackend.Security
         
         public static IServiceCollection AddVerifyJWT(this IServiceCollection Service, IConfiguration config)
         {
-
             Service.AddAuthentication(options =>
             {
                 options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -35,6 +35,12 @@ namespace AuthApiBackend.Security
                     OnTokenValidated = context =>
                     {
                         var tokenId = context.Principal?.FindFirst(JwtRegisteredClaimNames.Sub)?.Value;
+                        var blackListService = context.HttpContext.RequestServices.GetRequiredService<IBlackListedTokenService>();
+
+                        if (tokenId != null && blackListService.TokenExist(tokenId, CancellationToken.None).Result)
+                        {
+                            context.Fail("This token has been revoked.");
+                        }
 
                         return Task.CompletedTask;
                     }, 
@@ -45,8 +51,6 @@ namespace AuthApiBackend.Security
 
                         if (!string.IsNullOrEmpty(token))
                         {
-                            Console.WriteLine(token);
-                            Console.WriteLine("Token Found");
                             context.Token = token;
                         }
 
@@ -81,7 +85,6 @@ namespace AuthApiBackend.Security
                 };
 
             });
-
 
             return Service;
         }
