@@ -1,5 +1,6 @@
 ﻿using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
+using AuthApiBackend.Models;
 
 namespace AuthApiBackend.Services
 {
@@ -22,6 +23,16 @@ namespace AuthApiBackend.Services
         public async Task<bool> TokenExist(string tokenId, CancellationToken cancellationToken)
         {
             return await blackListedToken.IsBlackListed(tokenId, cancellationToken);
+        }
+
+        public async Task<IEnumerable<BlackListedToken>?> GetExpiredTokens(CancellationToken cancellationToken)
+        {
+            return await blackListedToken.GetAllExpiredBlackListedTokens(cancellationToken);
+        }
+
+        public async Task RemoveToken(BlackListedToken token, CancellationToken cancellationToken)
+        {
+            await blackListedToken.RemoveTokens(token, cancellationToken);
         }
 
     }

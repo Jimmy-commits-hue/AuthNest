@@ -8,6 +8,7 @@ namespace AuthApiBackend.Repositories
 
     public class BlackListedTokenRepo(AuthApiDbContext db) : IBlackListedTokenRepo
     {
+
         public async Task AddToken(BlackListedToken blackListedToken, CancellationToken cancellationToken)
         {
             await db.BlackListedToken.AddAsync(blackListedToken, cancellationToken);
@@ -19,6 +20,20 @@ namespace AuthApiBackend.Repositories
             return await db.BlackListedToken.AsNoTracking().
                          AnyAsync(c => c.TokenId == tokenId, cancellationToken);
         }
+
+        public async Task<IEnumerable<BlackListedToken>?> GetAllExpiredBlackListedTokens(CancellationToken cancellationToken)
+        {
+            return await db.BlackListedToken.AsNoTracking().
+                         Where(c => c.ExpiresIn < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         ToListAsync(cancellationToken);
+        }
+
+        public async Task RemoveTokens(BlackListedToken token, CancellationToken cancellationToken)
+        {
+            db.BlackListedToken.Remove(token);
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
     }
 
 }

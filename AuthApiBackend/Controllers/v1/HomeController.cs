@@ -2,10 +2,14 @@
 using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
+using AuthApiBackend.Security;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using System.IdentityModel.Tokens.Jwt;
+using System.Net.WebSockets;
 using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.V1
@@ -110,6 +114,58 @@ namespace AuthApiBackend.Controllers.V1
             await userService.FindUserLoginNumberById(nationalId, cancellationToken);
 
             return Ok(new { Message = "An email has been sent to ******@gmail.com" });
+        }
+
+        [Authorize]
+        [HttpPost("refresh-token")]
+        public async Task<IActionResult> RefreshToken(IAccountService accountService, GenerateJwtToken toke, 
+            IRefreshTokenService tokenService,CancellationToken cancellationToken)
+        {
+            var refreshToken = HttpContext.Request.Cookies.TryGetValue("refreshToken", out var token) ? token : null;
+
+            if (string.IsNullOrEmpty(refreshToken))
+            {
+                return Unauthorized("No refresh token provided");
+            }
+
+            var refreshTokenObject = await tokenService.GetRefreshToken(refreshToken, cancellationToken);
+
+            var userDetails = await accountService.GetAccountUserDeatailsUponLogin(refreshTokenObject.AccountId, cancellationToken);
+
+            var newRefreshToken = toke.GenerateToken(refreshTokenObject.AccountId, userDetails.FirstName, userDetails.Surname, userDetails.Role);
+
+            await tokenService.DeleteRefreshToken(refreshTokenObject, cancellationToken);
+
+            await tokenService.CreateRefreshToken(refreshTokenObject.AccountId, newRefreshToken, cancellationToken);
+
+            return Ok(new { Message = "Token refreshed successfully" });
+        }
+
+        [Authorize]
+        [HttpPost("logout")]
+        public async Task<IActionResult> Logout(IRefreshTokenService tokenService, IBlackListedTokenService blackListService,
+            CancellationToken cancellationToken)
+        {
+            HttpContext.Request.Cookies.TryGetValue("refreshToken", out var token);
+            HttpContext.Response.Cookies.Delete("refreshToken");
+
+            HttpContext.Request.Cookies.TryGetValue("accessToken", out var accessToken);
+            HttpContext.Response.Cookies.Delete("accessToken");
+            var handler = new JwtSecurityTokenHandler();
+            var jwtToken = handler.ReadJwtToken(accessToken!);
+            var validTo = new DateTimeOffset(jwtToken.ValidTo).ToUnixTimeSeconds();
+            var jti = jwtToken.Id;
+
+            var refreshTokenObject = await tokenService.GetRefreshToken(token!, cancellationToken);
+
+            if (refreshTokenObject != null)
+            {
+                await tokenService.DeleteRefreshToken(refreshTokenObject, cancellationToken);
+            }
+
+            await blackListService.AddBlackListedToken(jti, validTo, cancellationToken);
+
+            return Ok(new { Message = "Logged out successfully" });
         }
 
     }
