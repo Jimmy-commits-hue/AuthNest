@@ -1,15 +1,14 @@
 ﻿using Moq;
-using Xunit;
 using AuthApiBackend.Models;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Services;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Extensions.DependencyInjection;
 using AuthApiBackend.Utilities;
 
 namespace AuthApiBackendTest
 {
+
+    [Collection("Env collection")]
     public class RefreshTokenTest
     {
 

@@ -4,6 +4,7 @@ using AuthApiBackend.Interfaces.IServices;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 
 
 namespace AuthApiBackend.Controllers.V3
@@ -12,6 +13,7 @@ namespace AuthApiBackend.Controllers.V3
     [Authorize(Policy = "User")]
     [Route("api/v{version:apiversion}/[controller]")]
     [ApiController]
+    [EnableRateLimiting("AfterLogin")]
     public class UserController : ControllerBase
     {
 
