@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Serilog;
 using Serilog.Events;
+using System.Threading.RateLimiting;
 
 Env.Load();
 
@@ -65,6 +66,47 @@ try
         });
     });
 
+    builder.Services.AddRateLimiter(options =>
+    { 
+        options.AddPolicy("BeforeLogin", context =>
+        {
+            var ip = context.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+
+            if (!context.Request.HttpContext.Request.Cookies.TryGetValue("partitionKey", out var token))
+            {
+                var hash = System.Security.Cryptography.SHA256.HashData(System.Text.Encoding.UTF8.GetBytes(ip + Guid.NewGuid().ToString()));
+                token = Convert.ToBase64String(hash);
+
+                context.Request.HttpContext.Response.Cookies.Append("partitionKey", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddMinutes(10)
+                });
+            }
+
+            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
+            string partitionKey = token;
+
+            return RateLimitPartition.GetSlidingWindowLimiter(partitionKey, _ => new SlidingWindowRateLimiterOptions
+            {
+                PermitLimit = 5,                
+                Window = TimeSpan.FromMinutes(1), 
+                SegmentsPerWindow = 2,  
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+        });
+
+        options.OnRejected = async (context, cancellationToken) =>
+        {
+            context.HttpContext.Response.StatusCode = 429;
+            await context.HttpContext.Response.WriteAsJsonAsync($"Rate limit exceeded. Try again later.", cancellationToken);
+        };
+    });
+
     var app = builder.Build();
 
     var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
@@ -83,6 +125,7 @@ try
         });
     }
 
+    app.UseRateLimiter();
     app.UseExceptionHandler(_ => { });
     app.UseHttpsRedirection();
 

@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding.Validation;
+using Microsoft.AspNetCore.RateLimiting;
 using System.IdentityModel.Tokens.Jwt;
-using System.Net.WebSockets;
 using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.V1
@@ -18,7 +17,7 @@ namespace AuthApiBackend.Controllers.V1
     [AllowAnonymous]
     [Route("api/v{version:apiVersion}/[controller]")]
     [ApiController]
-
+    [EnableRateLimiting("BeforeLogin")]
     public class HomeController : ControllerBase
     {
 
@@ -56,6 +55,7 @@ namespace AuthApiBackend.Controllers.V1
                              GoogleDefaults.AuthenticationScheme);
         }
 
+        [DisableRateLimiting]
         [Authorize]
         [HttpGet("google-callback")]
         public IActionResult GetUserInfo()
@@ -116,6 +116,7 @@ namespace AuthApiBackend.Controllers.V1
             return Ok(new { Message = "An email has been sent to ******@gmail.com" });
         }
 
+        [DisableRateLimiting]
         [Authorize]
         [HttpPost("refresh-token")]
         public async Task<IActionResult> RefreshToken(IAccountService accountService, GenerateJwtToken toke, 
@@ -141,6 +142,7 @@ namespace AuthApiBackend.Controllers.V1
             return Ok(new { Message = "Token refreshed successfully" });
         }
 
+        [DisableRateLimiting]
         [Authorize]
         [HttpPost("logout")]
         public async Task<IActionResult> Logout(IRefreshTokenService tokenService, IBlackListedTokenService blackListService,
