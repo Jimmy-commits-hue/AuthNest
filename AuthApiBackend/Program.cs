@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Serilog;
 using Serilog.Events;
+using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
 
 Env.Load();
@@ -36,7 +37,6 @@ try
             new Newtonsoft.Json.Serialization.CamelCasePropertyNamesContractResolver();
     });
 
-    builder.Services.OathServiceMiddleware();
     builder.Services.AddServiceCollection();
     builder.Services.AddVerifyJWT(builder.Configuration);
 
@@ -86,8 +86,6 @@ try
                 });
             }
 
-            options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
-
             string partitionKey = token;
 
             return RateLimitPartition.GetSlidingWindowLimiter(partitionKey, _ => new SlidingWindowRateLimiterOptions
@@ -100,10 +98,43 @@ try
             });
         });
 
+        options.AddPolicy("AfterLogin", context =>
+        {
+
+            if(context.Request.HttpContext.Request.Cookies.TryGetValue("partitionKey", out var oldCookie))
+            {
+                context.Request.HttpContext.Response.Cookies.Delete("partitionKey");
+            }
+
+            if (!context.Request.HttpContext.Request.Cookies.TryGetValue("afterloginPartitionKey", out var token))
+            {
+                token = $"{context.User.FindFirst(JwtRegisteredClaimNames.Sub)?.Value ?? "UNKNOWN"}";
+
+                context.Request.HttpContext.Response.Cookies.Append("afterloginPartitionKey", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true,
+                    SameSite = SameSiteMode.Strict,
+                    Expires = DateTimeOffset.UtcNow.AddHours(1)
+                });
+            }
+
+            return RateLimitPartition.GetTokenBucketLimiter(token, _ => new TokenBucketRateLimiterOptions
+            {
+                TokenLimit = 5,
+                TokensPerPeriod = 1,
+                ReplenishmentPeriod = TimeSpan.FromSeconds(30),
+                QueueLimit = 0,
+                AutoReplenishment = true
+            });
+        });
+
+        options.RejectionStatusCode = StatusCodes.Status429TooManyRequests;
+
         options.OnRejected = async (context, cancellationToken) =>
         {
             context.HttpContext.Response.StatusCode = 429;
-            await context.HttpContext.Response.WriteAsJsonAsync($"Rate limit exceeded. Try again later.", cancellationToken);
+            await context.HttpContext.Response.WriteAsJsonAsync($"Too many request, Please slow down.", cancellationToken);
         };
     });
 

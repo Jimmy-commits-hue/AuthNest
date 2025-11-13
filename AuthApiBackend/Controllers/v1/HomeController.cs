@@ -48,30 +48,6 @@ namespace AuthApiBackend.Controllers.V1
             return Ok("Logged in Successfully");
         }
 
-        [HttpGet("googleRegistration")]
-        public IActionResult Login()
-        {
-            return Challenge(new AuthenticationProperties { RedirectUri = "/api/v1/home/google-callback" },
-                             GoogleDefaults.AuthenticationScheme);
-        }
-
-        [DisableRateLimiting]
-        [Authorize]
-        [HttpGet("google-callback")]
-        public IActionResult GetUserInfo()
-        {
-
-            var googleUser = new GoogleResponse
-            {
-                Surname = User.FindFirstValue(ClaimTypes.Surname),
-                GivenName = User.FindFirstValue(ClaimTypes.GivenName),
-                Email = User.FindFirstValue(ClaimTypes.Email)!
-            };
-
-            return Ok(googleUser);
-
-        }
-
         [HttpPost("resend-code")]
         public async Task<IActionResult> ResendCode([FromBody] string idNumber, ICodeResend codeResend, CancellationToken cancellationToken)
         {
