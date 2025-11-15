@@ -26,8 +26,8 @@ For monitoring and observability, the system relies on **Serilog, with Seq and C
 - [Clone And Setup](#clone-and-setup)
 - [Install Dependencies](#install-dependencies)
 - [Create And Apply Migrations](#create-and-apply-migrations)
-- [Run Project](#run-project)
-- [Run Tests](#run-tests)
+- [Run Project](#run-the-project)
+- [Run Test](#run-test)
 
 ---
 
@@ -41,22 +41,58 @@ This project is a RESTful API built in .NET that provides authentication, secure
 
 List the technologies used:
 
-- **C# / .NET 8**  
+## Language and Runtime
+- **C#**
+- **.NET 8**
+
+## Database and ORM
 - **Entity Framework Core**  
-- **MySQL**  
+- **MySQL**
+
+## Authentication and Security
 - **JWT Authentication**    
-- **Swagger**  
+- **Swagger**
+- **Rate limiting***
+- **API Versioning**
+- **Cookies**
+- **Anti-Forgery Token**
+- **Role Based Access Control (RBAC)**
+
+## API Features
+- **Swagger**
+- **API Versioning**
+  
+## Logging
+- **Serilog**
 
 ---
 
 ## Features
 
-- JWT Authentication (Login, Register, Refresh tokens)
-- Background services (cleaning expired/used codes, Sending emails)
-- Database integrations with EF Core
-- Centralized logging & error handling
+### User and Admin Management
+- Admin can register a role
+- User can register, Login, Logout
+- User can Delete, Retrieve, Disable and Enable account
+
+### Authentication and Security
+- Jwt Token Blacklisting on logout
+- Temporary Password Generation and Cleanup
+- Anti-Forgery Token ( Yet to implement)
+- Rate limiting
+
+### Background Services
+- Automatic Email Sending
+- Scheduled Cleanup of Expired/Used codes
+- Scheduled Cleanup for Expired/Used Temporary Passwords
+
+### Databases and Infrastructure
+- Entity Framework Integration
+- MySql databases
+
+### Architecture and Maintainability
 - Clean Architecture
-- Configurable using `.env` file
+- Centralized logging and error handling
+- Configurable using environmental variables (`.env`)
 
 ---
 
@@ -117,48 +153,62 @@ FROM_EMAIL=youremail
 ---
 
 ## Clone And Setup
+
 #### Clone the repository
+```bash
 git clone https://github.com/Jimmy-commits-hue/AuthNest.git
+```
 
 #### Navigate into the project
+```bash
 cd AuthNest
-
+```
 ---
 
 #### Install Dependency
 ##### Restoring
 ```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.sln
+```
 
 #---Note--
 - This will restore dependencies in both project (API project and API tests project)
 
 ##### Restore only API Project
+```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.csproj
+```
 
 #---Note---
 - This will restore only dependencies for API project
-
-```  
+  
 ---
 
 ## Create And Apply Migrations
+```bash
 - dotnet ef migrations add "Initial"
 - dotnet ef database update
+```
 
 ---
 
 ## Run the Project
+```bash
 - dotnet run
+```
 
 #### Ports
 - To run the project on different ports, please change "ASPNETCORE_URLS" environmental variables in launchsettings.json file.
 - #### Default Ports
+```json
   - ASPNETCORE_URLS: "https://localhost:7123;http://localhost:5267"
-    
+```
+
 ---
 
 ## Run Test
+```bash
 - dotnet test
+```
 
 ---
