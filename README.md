@@ -24,7 +24,7 @@ For monitoring and observability, the system relies on **Serilog, with Seq and C
 - [Project Structure](#project-structure)
 - [.Env Configuration](#env-configuration)
 - [Clone And Setup](#clone-and-setup)
-- [Install Dependencies](#install-dependencies)
+- [Install Dependencies](#restore-dependencies)
 - [Create And Apply Migrations](#create-and-apply-migrations)
 - [Run Project](#run-the-project)
 - [Run Test](#run-test)
