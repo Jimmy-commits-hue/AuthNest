@@ -68,16 +68,16 @@ root/
 │   ├── Database/
 │   ├── DTOs/
 │   ├── Enums/
-|   ├── Exceptions/
-|   ├── Interfaces/
-|   ├── Models/
-|   ├── RegisterServices/
-|   ├── Repositories/
-|   ├── Security/
-|   ├── Services/
-|   ├── Templates/
-|   ├── Utilities/
-|   ├── .env
+│   ├── Exceptions/
+│   ├── Interfaces/
+│   ├── Models/
+│   ├── RegisterServices/
+│   ├── Repositories/
+│   ├── Security/
+│   ├── Services/
+│   ├── Templates/
+│   ├── Utilities/
+│   ├── .env
 │   └── Program.cs
 │
 │── tests/
