@@ -195,9 +195,12 @@ cd AuthNest
 - dotnet run
 ```
 
-#### Ports
+#### Usage
+- After running the project, open browser and paste any of ASPNETCORE_URLS in launchsettings.json 
+ 
+##### Ports
 - To run the project on different ports, please change "ASPNETCORE_URLS" environmental variables in launchsettings.json file.
-- #### Default Ports
+- ###### Default Ports
 ```json
   - ASPNETCORE_URLS: "https://localhost:7123;http://localhost:5267"
 ```
