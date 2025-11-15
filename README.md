@@ -39,17 +39,15 @@ This project is a RESTful API built in .NET that provides authentication, secure
 
 ## Tech Stack
 
-List the technologies used:
-
-## Language and Runtime
+#### Language and Runtime
 - **C#**
 - **.NET 8**
 
-## Database and ORM
+#### Database and ORM
 - **Entity Framework Core**  
 - **MySQL**
 
-## Authentication and Security
+#### Authentication and Security
 - **JWT Authentication**    
 - **Swagger**
 - **Rate limiting***
@@ -58,38 +56,38 @@ List the technologies used:
 - **Anti-Forgery Token**
 - **Role Based Access Control (RBAC)**
 
-## API Features
+#### API Features
 - **Swagger**
 - **API Versioning**
   
-## Logging
+#### Logging
 - **Serilog**
 
 ---
 
 ## Features
 
-### User and Admin Management
+#### User and Admin Management
 - Admin can register a role
 - User can register, Login, Logout
 - User can Delete, Retrieve, Disable and Enable account
 
-### Authentication and Security
+#### Authentication and Security
 - Jwt Token Blacklisting on logout
 - Temporary Password Generation and Cleanup
 - Anti-Forgery Token ( Yet to implement)
 - Rate limiting
 
-### Background Services
+#### Background Services
 - Automatic Email Sending
 - Scheduled Cleanup of Expired/Used codes
 - Scheduled Cleanup for Expired/Used Temporary Passwords
 
-### Databases and Infrastructure
+#### Databases and Infrastructure
 - Entity Framework Integration
 - MySql databases
 
-### Architecture and Maintainability
+#### Architecture and Maintainability
 - Clean Architecture
 - Centralized logging and error handling
 - Configurable using environmental variables (`.env`)
@@ -166,7 +164,7 @@ cd AuthNest
 ---
 
 #### Install Dependency
-##### Restoring
+##### Restoring both project dependencies
 ```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.sln
 ```
@@ -174,7 +172,7 @@ cd AuthNest
 #---Note--
 - This will restore dependencies in both project (API project and API tests project)
 
-##### Restore only API Project
+##### Restore only API Project dependencies
 ```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.csproj
 ```
