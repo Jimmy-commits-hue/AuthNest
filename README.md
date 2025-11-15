@@ -23,8 +23,11 @@ For monitoring and observability, the system relies on **Serilog, with Seq and C
 - [Features](#features)
 - [Project Structure](#project-structure)
 - [.Env Configuration](#env-configuration)
+- [Clone And Setup](#clone-and-setup)
 - [Install Dependencies](#install-dependencies)
 - [Create And Apply Migrations](#create-and-apply-migrations)
+- [Run Project](#run-project)
+- [Run Tests](#run-tests)
 
 ---
 
@@ -113,12 +116,49 @@ FROM_EMAIL=youremail
 ```
 ---
 
-## Install Dependency
-- dotnet restore
+## Clone And Setup
+#### Clone the repository
+git clone https://github.com/Jimmy-commits-hue/AuthNest.git
+
+#### Navigate into the project
+cd AuthNest
+
+---
+
+#### Install Dependency
+##### Restoring
+```bash
+- dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.sln
+
+#---Note--
+- This will restore dependencies in both project (API project and API tests project)
+
+##### Restore only API Project
+- dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.csproj
+
+#---Note---
+- This will restore only dependencies for API project
+
+```  
+---
 
 ## Create And Apply Migrations
 - dotnet ef migrations add "Initial"
 - dotnet ef database update
 
-## Testing
+---
+
+## Run the Project
+- dotnet run
+
+#### Ports
+- To run the project on different ports, please change "ASPNETCORE_URLS" environmental variables in launchsettings.json file.
+- #### Default Ports
+  - ASPNETCORE_URLS: "https://localhost:7123;http://localhost:5267"
+    
+---
+
+## Run Test
 - dotnet test
+
+---
