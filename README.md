@@ -163,8 +163,8 @@ cd AuthNest
 ```
 ---
 
-#### Install Dependency
-##### Restoring both project dependencies
+## Restore Dependencies
+#### Restoring both project dependencies
 ```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.sln
 ```
@@ -172,7 +172,7 @@ cd AuthNest
 #---Note--
 - This will restore dependencies in both project (API project and API tests project)
 
-##### Restore only API Project dependencies
+#### Restore only API Project dependencies
 ```bash
 - dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.csproj
 ```
