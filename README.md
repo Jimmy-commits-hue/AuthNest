@@ -4,23 +4,23 @@
 
 This project is a real-world API simulation that focuses on secure user onboarding, account lifecycle management, and robust API governance. It includes a complete authentication and verification workflow to ensure security and reliability.
 
-The API allows users to register, after which an email containing a verification code is sent. The verification process validates the submitted code against the one stored in the database. Upon successful verification, the system automatically assigns a unique login number and activates the user’s account.
+The API allows users to register, after which an email containing a **verification code** is sent. The verification process validates the submitted code against the one stored in the database. Upon successful verification, the system automatically assigns a unique login number and activates the user’s account.
 
 To maintain system integrity, an admin must create at least one role before any registration attempt. If a user tries to register without any existing roles, the API throws an exception indicating that a role must be configured first.
 
-Users who do not receive their verification code can request a new one, but requests are rate-limited to three attempts per day to prevent abuse. The API also provides secure features for password updates, password resets, account deactivation, and account deletion, Login number request if forgotten.
+Users who do not receive their verification code can request a new one, but requests are rate-limited to three attempts per day to prevent abuse. The API also provides secure features for **password updates**, **password resets**, **account deactivation**, and **account deletion**, **Login number request if forgotten**.
 
-The project includes API versioning, advanced Rate Limiting mechanisms such as Sliding Window and Token Bucket Policies, and a full JWT authentication system with both access and refresh tokens for improved user experience.
+The project includes **API versioning**, advanced **Rate Limiting** mechanisms such as **Sliding Window and Token Bucket Policies**, and a full **JWT authentication** system with both **access and refresh tokens** for improved user experience.
 
-For monitoring and observability, the system relies on Serilog, with Seq and Console sinks to provide structured logs, performance insights, and debugging support.
+For monitoring and observability, the system relies on **Serilog, with Seq and Console sinks** to provide structured logs, performance insights, and debugging support.
 
 ---
 
-## 📚 Table of Contents
+## Table of Contents
 
-- [About](#-about)
+- [About](#-About)
 - [Tech Stack](#-tech-stack)
-- [Features](#-features)
+- [Features](#-Features)
 - [Project Structure](#-project-structure)
 
 ---
@@ -83,4 +83,39 @@ root/
 │── README.md
 │── unit_test.yml
 
-Readme incomplete
+```
+---
+
+## .Env Configuration
+
+`.env` file contains sensitive environment variables required by the API.
+Below is the structure you should follow:
+
+```txt
+#---DATABASE---
+DB_PASSWORD=yourpassword
+
+#---JWT---
+# Must be at least 32 bytes for strong HMACSHA256 security
+JWT_KEY=your-super-secretive-key(atleast 32 bytes)
+
+#---AES---
+# Must be EXACTLY 16 bytes for AES-128 encryption
+AES_KEY=your-super-secretive-key(16 bytes)
+
+#---EMAIL---
+EMAIL_PASSWORD=yourgmailpassword-notpersonalpassword
+FROM_EMAIL=youremail
+
+```
+---
+
+## Install Dependency
+- dotnet restore
+
+## Create And Apply Migrations
+- dotnet ef migrations add "Initial"
+- dotnet ef database update
+
+## Testing
+- dotnet test
