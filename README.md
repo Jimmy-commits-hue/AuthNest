@@ -18,9 +18,9 @@ For monitoring and observability, the system relies on **Serilog, with Seq and C
 
 ## Table of Contents
 
-- [About](#-About)
+- [About](#about)
 - [Tech Stack](#-tech-stack)
-- [Features](#-Features)
+- [Features](#-features)
 - [Project Structure](#-project-structure)
 
 ---
