@@ -11,11 +11,17 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task UpdatePasswordStatus(string accountId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(CancellationToken cancellationToken);
+        Task<int> NumberOfPendingPasswords(CancellationToken cancellationToken);
+         
+        Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(int round, CancellationToken cancellationToken);
 
-        Task<IEnumerable<TemporaryPassword>?> RetrieveExpiredCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfExpiredTempCodes(CancellationToken cancellationToken);
 
-        Task<IEnumerable<TemporaryPassword>?> RetrieveUsedCodes(CancellationToken cancellationToken);
+        Task<IEnumerable<TemporaryPassword>?> RetrieveExpiredCodes(int rounds, CancellationToken cancellationToken);
+
+        Task<int> NumberOfUsedCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<TemporaryPassword>?> RetrieveUsedCodes(int round, CancellationToken cancellationToken);
 
         Task RemoveCodes(TemporaryPassword code, CancellationToken cancellationToken);
 

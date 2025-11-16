@@ -56,9 +56,14 @@ namespace AuthApiBackend.Services
 
         }
 
-        public async Task<IEnumerable<PendingCode>?> GetPendingCodeAsync(CancellationToken cancellationToken)
+        public async Task<int> NumberOfPendingCodes(CancellationToken cancellationToken)
         {
-            return await codeRepo.GetPendingCodes(cancellationToken);
+            return await codeRepo.NumberOfPendingCodes(cancellationToken);
+        }
+
+        public async Task<IEnumerable<PendingCode>?> GetPendingCodeAsync(int round, CancellationToken cancellationToken)
+        {
+            return await codeRepo.GetPendingCodes(round,cancellationToken);
         }
 
         public async Task RequestForCode(UserResponse userAttemptsAndUserId, CancellationToken cancellationToken)
@@ -99,9 +104,14 @@ namespace AuthApiBackend.Services
             await codeRepo.UpdateEmailSentAsync(codeId, cancellationToken);
         }
 
-        public async Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(CancellationToken cancellationToken)
+        public async Task<int> NumberOfExpiredCodes(CancellationToken cancellationToken)
         {
-            return await codeRepo.GetExpiredVericationCodes(cancellationToken);
+            return await codeRepo.NumberOfExpiredCodes(cancellationToken);
+        }
+
+        public async Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(int round, CancellationToken cancellationToken)
+        {
+            return await codeRepo.GetExpiredVericationCodes(round, cancellationToken);
         }
 
         public async Task RemoveCodes(VerificationCode code, CancellationToken cancellationToken)
@@ -109,9 +119,15 @@ namespace AuthApiBackend.Services
             await codeRepo.DeleteCodes(code, cancellationToken);
         }
 
-        public async Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(CancellationToken cancellationToken)
+
+        public async Task<int> NumberOfUsedCodes(CancellationToken cancellationToken)
         {
-            return await codeRepo.GetAllUsedVerificationCodes(cancellationToken);
+            return await codeRepo.NumberOfUsedVerificationCodes(cancellationToken);
+        }
+
+        public async Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(int round, CancellationToken cancellationToken)
+        {
+            return await codeRepo.GetAllUsedVerificationCodes(round, cancellationToken);
         }
 
     }

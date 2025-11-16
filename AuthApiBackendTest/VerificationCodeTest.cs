@@ -130,7 +130,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task GetPendingCode_ReturnsPendingCodes_IfAny()
         {
-            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>())).
+            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<int>(),It.IsAny<CancellationToken>())).
                      ReturnsAsync(
                                      [
                                         new(
@@ -143,26 +143,26 @@ namespace AuthApiBackendTest
                                      ]
                                  );
 
-            var result = await service.GetPendingCodeAsync(CancellationToken.None);
+            var result = await service.GetPendingCodeAsync(0, CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.IsType<PendingCode>(result.First());
             #pragma warning restore CS8604
 
-            codeRepo.Verify(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(repo => repo.GetPendingCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetPendingCode_ReturnsNull_IfNoPendingCodes()
         {
-            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>()))
+            codeRepo.Setup(repo => repo.GetPendingCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()))
                     .ReturnsAsync((IEnumerable<PendingCode>?)null);
 
-            var result = await service.GetPendingCodeAsync(CancellationToken.None);
+            var result = await service.GetPendingCodeAsync(0,CancellationToken.None);
 
             Assert.Null(result);
 
-            codeRepo.Verify(repo => repo.GetPendingCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(repo => repo.GetPendingCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -304,7 +304,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task ExpiredVerificationCodes_ReturnsExpiredVerificationCodes_IfAny()
         {
-            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>())).
+            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<int>(),It.IsAny<CancellationToken>())).
                      ReturnsAsync(
                                   [
                                     new()
@@ -314,26 +314,26 @@ namespace AuthApiBackendTest
                                   ]
                                  );
 
-            var expiredCodes = await service.ExpiredVerificationCodes(CancellationToken.None);
+            var expiredCodes = await service.ExpiredVerificationCodes(0 ,CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.IsType<VerificationCode>(expiredCodes.First());
             #pragma warning restore CS8604
 
-            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task ExpiredVerificationCodes_ReturnsNull_IfNone()
         {
-            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>())).
+            codeRepo.Setup(c => c.GetExpiredVericationCodes(It.IsAny<int>(),It.IsAny<CancellationToken>())).
                      ReturnsAsync((List<VerificationCode>?)null);
 
-            var expiredCodes = await service.ExpiredVerificationCodes(CancellationToken.None);
+            var expiredCodes = await service.ExpiredVerificationCodes(0, CancellationToken.None);
 
             Assert.Null(expiredCodes);
 
-            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetExpiredVericationCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -363,7 +363,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task RetrieveUsedCodes_ReturnUsedCodes_IfAny()
         {
-            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>())).
+            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                      ReturnsAsync(
                                     [
                                        new()
@@ -373,26 +373,26 @@ namespace AuthApiBackendTest
                                     ]
                                  );
 
-            var usedCodes = await service.RetrieveUsedCodes(It.IsAny<CancellationToken>());
+            var usedCodes = await service.RetrieveUsedCodes(0, It.IsAny<CancellationToken>());
 
             #pragma warning disable CS8604
             Assert.IsType<VerificationCode>(usedCodes.First());
             #pragma warning restore CS8604
 
-            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task RetrieveUsedCodes_ReturnNull_IfNone()
         {
-            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>())).
+            codeRepo.Setup(c => c.GetAllUsedVerificationCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                      ReturnsAsync((List<VerificationCode>?)null);
 
-            var usedCodes = await service.RetrieveUsedCodes(It.IsAny<CancellationToken>());
+            var usedCodes = await service.RetrieveUsedCodes(0, It.IsAny<CancellationToken>());
 
             Assert.Null(usedCodes);
 
-            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<CancellationToken>()), Times.Once);
+            codeRepo.Verify(c => c.GetAllUsedVerificationCodes(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
     }

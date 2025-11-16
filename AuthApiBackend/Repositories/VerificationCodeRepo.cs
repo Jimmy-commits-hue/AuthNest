@@ -35,15 +35,25 @@ namespace AuthApiBackend.Repositories
                          FirstOrDefaultAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<PendingCode>?> GetPendingCodes(CancellationToken cancellationToken)
+        public async Task<int> NumberOfPendingCodes(CancellationToken cancellationToken)
         {
             return await db.VerificationCode.AsNoTracking().
                          Where(v => v.IsActive == true && !v.IsEmailSent).
+                         CountAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<PendingCode>?> GetPendingCodes(int round, CancellationToken cancellationToken)
+        {
+            return await db.VerificationCode.AsNoTracking().
+                         Where(v => v.IsActive == true && !v.IsEmailSent).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(v => new PendingCode(
-                                     v.Id, 
+                                     v.Id,
                                      v.Code,
-                                     v.ContactDetails.Email, 
-                                     v.ContactDetails.User.FirstName, 
+                                     v.ContactDetails.Email,
+                                     v.ContactDetails.User.FirstName,
                                      v.ContactDetails.User.Surname)).
                          ToListAsync(cancellationToken);
         }
@@ -88,12 +98,25 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<VerificationCode>?> GetExpiredVericationCodes(CancellationToken cancellationToken)
+        public async Task<int> NumberOfExpiredCodes(CancellationToken cancellationToken)
         {
             long dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             return await db.VerificationCode.AsNoTracking().
-                   Where(c => c.IsActive == true && c.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).ToListAsync(cancellationToken);
+                         Where(c => c.IsActive == true && c.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         CountAsync(cancellationToken);
+        }
+        public async Task<IEnumerable<VerificationCode>?> GetExpiredVericationCodes(int round, CancellationToken cancellationToken)
+        {
+            long dateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            return await db.VerificationCode.AsNoTracking().
+                   Where(c => c.IsActive == true && c.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                   OrderBy(u => u.Id).  
+                   Skip(round * 10).
+                   Take(10).
+                   Select(u => u).
+                   ToListAsync(cancellationToken);
         }
 
         public async Task DeleteCodes(VerificationCode code, CancellationToken cancellationToken)
@@ -124,12 +147,22 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<VerificationCode>?> GetAllUsedVerificationCodes(CancellationToken cancellationToken)
+        public async Task<IEnumerable<VerificationCode>?> GetAllUsedVerificationCodes(int round, CancellationToken cancellationToken)
         {
             return await db.VerificationCode.AsNoTracking().
                          Where(c => c.IsActive == false).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(u => u).
                          ToListAsync(cancellationToken);
+        }
+
+        public async Task<int> NumberOfUsedVerificationCodes(CancellationToken cancellationToken)
+        {
+            return await db.VerificationCode.AsNoTracking().
+                         Where(c => c.IsActive == false).
+                         CountAsync(cancellationToken);
         }
     }
 

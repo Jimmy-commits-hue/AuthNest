@@ -26,30 +26,55 @@ namespace AuthApiBackend.BackgroundTask
                 {
                     var codeService = scope.ServiceProvider.GetRequiredService<IVerificationCodeService>();
 
+                    var numberOfExpiredVerificationCodes = await codeService.NumberOfExpiredCodes(stoppingToken);
+
+                    int tolalRoundsForVerificationCodes = numberOfExpiredVerificationCodes / 10;
+
                     var tempPasswordService = scope.ServiceProvider.GetRequiredService<ITemporaryPasswordService>();
 
+                    int numberOfExpiredTempCodes = await tempPasswordService.NumberOfExpiredTempCodes(stoppingToken);
 
-                    IEnumerable<VerificationCode>? expiredVerificationCodes = await codeService.ExpiredVerificationCodes(stoppingToken);
+                    int totalRoundsForTempCodes = numberOfExpiredTempCodes / 10;
 
-                    IEnumerable<TemporaryPassword>? expiredTemporaryCodes = await tempPasswordService.RetrieveExpiredCodes(stoppingToken);
+                    int roundsToMake = 0;
 
-
-                    if(expiredVerificationCodes is not null)
+                    if(numberOfExpiredVerificationCodes > numberOfExpiredTempCodes) { 
+                        roundsToMake = tolalRoundsForVerificationCodes;
+                    }
+                    else
                     {
-                        foreach(var code in expiredVerificationCodes)
-                        {
-                            await codeService.RemoveCodes(code, stoppingToken);
-                        }
+                        roundsToMake = totalRoundsForTempCodes;
                     }
 
-                    if(expiredTemporaryCodes is not null)
-                    {
-                        foreach (var code in expiredTemporaryCodes)
-                        {
-                            await tempPasswordService.RemoveCodes(code, stoppingToken);
-                        }
-                    }
+                    int round = 0;
 
+                    logger.LogInformation("Starting cleanup of expired codes. Estimated rounds: {TotalRounds}", roundsToMake);
+
+                    while (roundsToMake >= round)
+                    { 
+                        IEnumerable<VerificationCode>? expiredVerificationCodes = await codeService.ExpiredVerificationCodes(round, stoppingToken);
+
+                        IEnumerable<TemporaryPassword>? expiredTemporaryCodes = await tempPasswordService.RetrieveExpiredCodes(round, stoppingToken);
+
+
+                        if (expiredVerificationCodes is not null)
+                        {
+                            foreach (var code in expiredVerificationCodes)
+                            {
+                                await codeService.RemoveCodes(code, stoppingToken);
+                            }
+                        }
+
+                        if (expiredTemporaryCodes is not null)
+                        {
+                            foreach (var code in expiredTemporaryCodes)
+                            {
+                                await tempPasswordService.RemoveCodes(code, stoppingToken);
+                            }
+                        }
+
+                        round++;
+                    }
                 }
 
                 await Task.Delay(timespan, stoppingToken);

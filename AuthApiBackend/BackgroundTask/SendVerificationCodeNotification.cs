@@ -2,6 +2,7 @@
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Utilities;
+using MimeKit.Tnef;
 using Serilog.Context;
 
 namespace AuthApiBackend.BackgroundTask
@@ -34,53 +35,62 @@ namespace AuthApiBackend.BackgroundTask
 
                         var codeService = service.ServiceProvider.GetRequiredService<IVerificationCodeService>();
 
-                        IEnumerable<PendingCode>? pendingCode = await codeService.GetPendingCodeAsync(stoppingToken);
+                        int verificationCodeCount = await codeService.NumberOfPendingCodes(stoppingToken);
 
-                        var emailService = service.ServiceProvider.GetRequiredService<INotification>();
+                        int numberOfTurns = (int)verificationCodeCount / 10;
+                        int round = 0;
 
-
-
-                        if (pendingCode is not null)
+                        while (numberOfTurns >= round)
                         {
 
-                            foreach (var code in pendingCode)
+
+                            IEnumerable<PendingCode>? pendingCode = await codeService.GetPendingCodeAsync(round,stoppingToken);
+
+                            var emailService = service.ServiceProvider.GetRequiredService<INotification>();
+
+                            if (pendingCode is not null)
                             {
 
-                                using (LogContext.PushProperty("UserId", code.Email))
+                                foreach (var code in pendingCode)
                                 {
 
-                                    try
+                                    using (LogContext.PushProperty("UserId", code.Email))
                                     {
 
-                                        logger.LogInformation("Sending verification code to {Email}", code.Email);
-
-                                        var notification = new DTOs.TemplatesDto.NotificationDto
+                                        try
                                         {
 
-                                            Name = pendingCode.First().FirstName,
-                                            ToEmail = pendingCode.First().Email,
-                                            Subject = "Your Verification Code",
-                                            Surname = pendingCode.First().Surname,
-                                            VerificationType = Enums.NotificationType.Verification.ToString(),
-                                            VerificationLink = $"https://localhost:7123/api/v1/home/verify?CodeId={pendingCode.First().Id}",
-                                            VerificationCode = EncryptData.Decrypt(pendingCode.First().Code),
-                                            TemplateName = "VerificationEmail.cshtml",
+                                            logger.LogInformation("Sending verification code to {Email}", code.Email);
 
-                                        };
+                                            var notification = new DTOs.TemplatesDto.NotificationDto
+                                            {
+
+                                                Name = pendingCode.First().FirstName,
+                                                ToEmail = pendingCode.First().Email,
+                                                Subject = "Your Verification Code",
+                                                Surname = pendingCode.First().Surname,
+                                                VerificationType = Enums.NotificationType.Verification.ToString(),
+                                                VerificationLink = $"https://localhost:7123/api/v1/home/verify?CodeId={pendingCode.First().Id}",
+                                                VerificationCode = EncryptData.Decrypt(pendingCode.First().Code),
+                                                TemplateName = "VerificationEmail.cshtml",
+
+                                            };
 
 
-                                        await emailService.SendNotification(notification);
+                                            await emailService.SendNotification(notification);
 
-                                        await codeService.UpdateEmailSentAsync(code.Id, stoppingToken);
+                                            await codeService.UpdateEmailSentAsync(code.Id, stoppingToken);
 
-                                        logger.LogInformation("Code was sent successfully to {Email}", code.Email);
+                                            logger.LogInformation("Code was sent successfully to {Email}", code.Email);
 
-                                    }
-                                    catch (Exception ex)
-                                    {
+                                        }
+                                        catch (Exception ex)
+                                        {
 
-                                        logger.LogError(ex, "An error occurred when sending a code to {Email} {FirstName} {Surname}",
-                                            code.Email, code.FirstName, code.Surname);
+                                            logger.LogError(ex, "An error occurred when sending a code to {Email} {FirstName} {Surname}",
+                                                code.Email, code.FirstName, code.Surname);
+
+                                        }
 
                                     }
 
@@ -88,6 +98,7 @@ namespace AuthApiBackend.BackgroundTask
 
                             }
 
+                            round++;
                         }
 
                     }

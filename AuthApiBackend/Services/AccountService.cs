@@ -60,9 +60,14 @@ namespace AuthApiBackend.Services
             await accountRepo.UpdateAccountAsync(accountId, number, cancellationToken);
         }   
 
-        public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken)
+        public async Task<int> GetNumberOfPendingAccounts(CancellationToken cancellationToken)
         {
-            return await accountRepo.GetPendingAccounts(cancellationToken);
+            return await accountRepo.GetNumberOfPendingAccounts(cancellationToken);
+        }
+
+        public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(int round,CancellationToken cancellationToken)
+        {
+            return await accountRepo.GetPendingAccounts(round, cancellationToken);
         }
 
         public async Task UpdateIsEmailSent(string accountId,CancellationToken cancellationToken)
@@ -186,9 +191,14 @@ namespace AuthApiBackend.Services
             await accountRepo.DisableAccount(accountId!, cancellationToken);
         }
 
-        public async Task<IEnumerable<LockedAccounts>?> GetAllLockedAccounts(CancellationToken cancellationToken)
+        public async Task<int> NumberOfLockedAccounts(CancellationToken cancellationToken)
         {
-            return await accountRepo.GetLockedAccounts(cancellationToken);
+            return await accountRepo.GetNumberOfLockedAccounts(cancellationToken);
+        }
+
+        public async Task<IEnumerable<LockedAccounts>?> GetAllLockedAccounts(int round, CancellationToken cancellationToken)
+        {
+            return await accountRepo.GetLockedAccounts(round, cancellationToken);
         }
 
         public async Task UnlockAccount(string accountId, CancellationToken cancellationToken)
@@ -213,9 +223,14 @@ namespace AuthApiBackend.Services
             await accountRepo.UpdateDeleteStatus(accountId, cancellationToken);
         }
 
-        public async Task<IEnumerable<User>?> GetAllDeletedAccounts(CancellationToken cancellationToken)
+        public async Task<int> NumberOfAccountsToDelete(CancellationToken cancellationToken)
         {
-            return await accountRepo.GetAllDeletedAccounts(cancellationToken);
+            return await accountRepo.GetNumberOfAccountsToDelete(cancellationToken);
+        }
+
+        public async Task<IEnumerable<User>?> GetAllDeletedAccounts(int round, CancellationToken cancellationToken)
+        {
+            return await accountRepo.GetAllDeletedAccounts(round, cancellationToken);
         }
 
         public async Task<AccountResponse> GetAccountUserDeatailsUponLogin(string accountId, CancellationToken cancellationToken)

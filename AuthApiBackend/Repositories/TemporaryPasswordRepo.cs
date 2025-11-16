@@ -40,10 +40,20 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(CancellationToken cancellationToken)
+        public async Task<int> NumberOfPendingPasswords(CancellationToken cancellationToken)
         {
             return await db.TemporaryPassword.AsNoTracking().
                          Where(u => u.IsActive == true && u.IsEmailSent == false).
+                         CountAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(int round, CancellationToken cancellationToken)
+        {
+            return await db.TemporaryPassword.AsNoTracking().
+                         Where(u => u.IsActive == true && u.IsEmailSent == false).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(p => new ResetPasswordResponse(
                                      p.Account.User.ContactDetails!.Email,
                                      p.HashedPassword,
@@ -83,18 +93,24 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<TemporaryPassword>?> GetExpiredCodes(CancellationToken cancellationToken)
+        public async Task<IEnumerable<TemporaryPassword>?> GetExpiredCodes(int round, CancellationToken cancellationToken)
         {
-            return await db.TemporaryPassword
-                         .AsNoTracking()
-                         .Where(u => u.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds())
-                         .ToListAsync(cancellationToken);
+            return await db.TemporaryPassword.AsNoTracking().
+                         Where(u => u.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
+                         Select(u => u).
+                         ToListAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<TemporaryPassword>?> GetUsedCodes(CancellationToken cancellationToken)
+        public async Task<IEnumerable<TemporaryPassword>?> GetUsedCodes(int round, CancellationToken cancellationToken)
         {
             return await db.TemporaryPassword.AsNoTracking().
                          Where(u => u.IsActive == false).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(u => u).
                          ToListAsync(cancellationToken);
         }
@@ -104,7 +120,21 @@ namespace AuthApiBackend.Repositories
             db.TemporaryPassword.Remove(code);
             await db.SaveChangesAsync(cancellationToken);
         }
-        
+
+        public async Task<int> CountExpiredTempCodes(CancellationToken cancellationToken)
+        {
+            return await db.TemporaryPassword.AsNoTracking().
+                         Where(u => u.ExpiresAt < DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         CountAsync(cancellationToken);
+        }
+
+        public async Task<int> CountUsedCodes(CancellationToken cancellationToken)
+        {
+            return await db.TemporaryPassword.AsNoTracking().
+                         Where(u => u.IsActive == false).
+                         CountAsync(cancellationToken);
+        }
+
     }
 
 }

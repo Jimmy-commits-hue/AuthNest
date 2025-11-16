@@ -13,7 +13,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task UpdateStatus(string accountId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(CancellationToken cancellationToken);
+        Task<int> NumberOfPendingPasswords(CancellationToken cancellationToken);
+
+        Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(int round, CancellationToken cancellationToken);
 
         Task<int> GetAttemptCount(string accountId, CancellationToken cancellationToken);
 
@@ -21,9 +23,13 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task DeactivateOldCode(string tempId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<TemporaryPassword>?> GetExpiredCodes(CancellationToken cancellationToken);
+        Task<int> CountExpiredTempCodes(CancellationToken cancellationToken);
 
-        Task<IEnumerable<TemporaryPassword>?> GetUsedCodes(CancellationToken cancellationToken);
+        Task<IEnumerable<TemporaryPassword>?> GetExpiredCodes(int rounds, CancellationToken cancellationToken);
+
+        Task<int> CountUsedCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<TemporaryPassword>?> GetUsedCodes(int round, CancellationToken cancellationToken);
 
         Task DeleteCodes(TemporaryPassword code, CancellationToken cancellationToken);
     }

@@ -112,7 +112,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task GetPendingAccounts_ReturnsPendingAccounts_IfAny()
         {
-            accountRepo.Setup(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<int>(),It.IsAny<CancellationToken>())).
                         ReturnsAsync(
                        [
                            new(
@@ -129,26 +129,26 @@ namespace AuthApiBackendTest
 
                        ]);
 
-            var result = await accountService.GetPendingAccounts(CancellationToken.None);
+            var result = await accountService.GetPendingAccounts(0, CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.IsType<PendingAccountNumbers>(result.First());
             #pragma warning restore CS8604
 
-            accountRepo.Verify(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         
         [Fact]
         public async Task GetPendingEmails_ReturnsNull_IfNone()
         {
-            accountRepo.Setup(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                         ReturnsAsync((IEnumerable<PendingAccountNumbers>?)null);
 
-            var result = await accountService.GetPendingAccounts(CancellationToken.None);
+            var result = await accountService.GetPendingAccounts(0, CancellationToken.None);
 
             Assert.Null(result);
 
-            accountRepo.Verify(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(accountRepo => accountRepo.GetPendingAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         
         [Fact]
@@ -746,7 +746,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task GetAllLockedAccounts_ReturnsLockedAccounts_IfAny()
         {
-            accountRepo.Setup(c => c.GetLockedAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(c => c.GetLockedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                         ReturnsAsync(
                         [
                             new(
@@ -755,27 +755,27 @@ namespace AuthApiBackendTest
                                 )
                         ]);
 
-            var lockedAccounts = await accountService.GetAllLockedAccounts(CancellationToken.None);
+            var lockedAccounts = await accountService.GetAllLockedAccounts(0, CancellationToken.None);
 
 
             #pragma warning disable CS8602
             Assert.IsType<LockedAccounts>(lockedAccounts.GetEnumerator().Current);
             #pragma warning restore CS8602 
 
-            accountRepo.Verify(c => c.GetLockedAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(c => c.GetLockedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetAllLockedAccounts_ReturnsNull_IfNone()
         {
-            accountRepo.Setup(c => c.GetLockedAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(c => c.GetLockedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                         ReturnsAsync((List<LockedAccounts>?)null);
 
-            var lockedAccounts = await accountService.GetAllLockedAccounts(CancellationToken.None);
+            var lockedAccounts = await accountService.GetAllLockedAccounts(0, CancellationToken.None);
 
             Assert.Null(lockedAccounts);
 
-            accountRepo.Verify(c => c.GetLockedAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(c => c.GetLockedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -864,7 +864,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task GetAllDeletedAccounts_ReturnsAccountDueToDeletion_IfAny()
         {
-            accountRepo.Setup(c => c.GetAllDeletedAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(c => c.GetAllDeletedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                         ReturnsAsync(
                         [
                             new()
@@ -876,7 +876,7 @@ namespace AuthApiBackendTest
                             }
                         ]);
 
-            var deletedAccount = await accountService.GetAllDeletedAccounts(CancellationToken.None);
+            var deletedAccount = await accountService.GetAllDeletedAccounts(0, CancellationToken.None);
 
             #pragma warning disable CS8602 
             var user = deletedAccount.GetEnumerator().Current;
@@ -884,20 +884,20 @@ namespace AuthApiBackendTest
 
             Assert.IsType<User>(deletedAccount.First());
 
-            accountRepo.Verify(c => c.GetAllDeletedAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(c => c.GetAllDeletedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetAllDeletedAccounts_ReturnNull_IfNone()
         {
-            accountRepo.Setup(c => c.GetAllDeletedAccounts(It.IsAny<CancellationToken>())).
+            accountRepo.Setup(c => c.GetAllDeletedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                         ReturnsAsync((List<User>?)null);
 
-            var deletedAccounts = await accountService.GetAllDeletedAccounts(CancellationToken.None);
+            var deletedAccounts = await accountService.GetAllDeletedAccounts(0, CancellationToken.None);
 
             Assert.Null(deletedAccounts);
 
-            accountRepo.Verify(c => c.GetAllDeletedAccounts(It.IsAny<CancellationToken>()), Times.Once);
+            accountRepo.Verify(c => c.GetAllDeletedAccounts(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
         
     }

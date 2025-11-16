@@ -113,7 +113,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task GetAllPendingPasswords_ReturnsPendingPasswords_IfAny()
         {
-             passwordRepo.Setup(c => c.GetAllPendingPasswords(It.IsAny<CancellationToken>())).
+             passwordRepo.Setup(c => c.GetAllPendingPasswords(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                           ReturnsAsync(
                                      [
                                         new(
@@ -123,26 +123,26 @@ namespace AuthApiBackendTest
                                             )
                                       ]);
 
-            var response = await passwordService.GetAllPendingPasswords(CancellationToken.None);
+            var response = await passwordService.GetAllPendingPasswords(0, CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.IsType<ResetPasswordResponse>(response.First());
             #pragma warning restore CS8604
 
-            passwordRepo.Verify(c => c.GetAllPendingPasswords(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetAllPendingPasswords(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task GetAllPendingPassword_ReturnsNull_IfNoPendingPasswords()
         {
-            passwordRepo.Setup(c => c.GetAllPendingPasswords(It.IsAny<CancellationToken>())).
+            passwordRepo.Setup(c => c.GetAllPendingPasswords(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                          ReturnsAsync((List<ResetPasswordResponse>?)null);
 
-            var tempPassword = await passwordService.GetAllPendingPasswords(CancellationToken.None);
+            var tempPassword = await passwordService.GetAllPendingPasswords(0, CancellationToken.None);
 
             Assert.Null(tempPassword);
 
-            passwordRepo.Verify(c => c.GetAllPendingPasswords(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetAllPendingPasswords(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
@@ -200,7 +200,7 @@ namespace AuthApiBackendTest
         [Fact]
         public async Task RetrieveExpiredCodes_ReturnsExpiredCodes_IfAny()
         {
-            passwordRepo.Setup(c => c.GetExpiredCodes(It.IsAny<CancellationToken>())).
+            passwordRepo.Setup(c => c.GetExpiredCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                          ReturnsAsync(
                                      [
                                         new(){
@@ -208,32 +208,32 @@ namespace AuthApiBackendTest
                                              }
                                      ]);
 
-            var expiredCodes = await passwordService.RetrieveExpiredCodes(CancellationToken.None);
+            var expiredCodes = await passwordService.RetrieveExpiredCodes(0, CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.True(expiredCodes.Any());
             #pragma warning restore CS8604
 
-            passwordRepo.Verify(c => c.GetExpiredCodes(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetExpiredCodes(It.IsAny<int>(),It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task RetrieveExpiredCodes_ReturnsNull_IfNone()
         {
-            passwordRepo.Setup(c => c.GetExpiredCodes(It.IsAny<CancellationToken>())).
+            passwordRepo.Setup(c => c.GetExpiredCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                          ReturnsAsync((List<TemporaryPassword>?)null);
 
-            var expiredCodes = await passwordService.RetrieveExpiredCodes(CancellationToken.None);
+            var expiredCodes = await passwordService.RetrieveExpiredCodes(0, CancellationToken.None);
 
             Assert.Null(expiredCodes);
 
-            passwordRepo.Verify(c => c.GetExpiredCodes(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetExpiredCodes(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task RetrieveUsedCodes_ReturnsUsedCode_IfAny()
         {
-            passwordRepo.Setup(c => c.GetUsedCodes(It.IsAny<CancellationToken>())).
+            passwordRepo.Setup(c => c.GetUsedCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                          ReturnsAsync(
                                      [
                                         new()
@@ -242,26 +242,26 @@ namespace AuthApiBackendTest
                                             }
                                      ]);
 
-            var usedCodes = await passwordService.RetrieveUsedCodes(CancellationToken.None);
+            var usedCodes = await passwordService.RetrieveUsedCodes(0, CancellationToken.None);
 
             #pragma warning disable CS8604
             Assert.IsType<TemporaryPassword>(usedCodes.First());
             #pragma warning restore CS8604
 
-            passwordRepo.Verify(c => c.GetUsedCodes(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetUsedCodes(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task RetrieveUsedCodes_ReturnsNull_IfNone()
         {
-            passwordRepo.Setup(c => c.GetUsedCodes(It.IsAny<CancellationToken>())).
+            passwordRepo.Setup(c => c.GetUsedCodes(It.IsAny<int>(), It.IsAny<CancellationToken>())).
                          ReturnsAsync((List<TemporaryPassword>?)null);
 
-            var usedCodes = await passwordService.RetrieveUsedCodes(CancellationToken.None);
+            var usedCodes = await passwordService.RetrieveUsedCodes(0, CancellationToken.None);
 
             Assert.Null(usedCodes);
 
-            passwordRepo.Verify(c => c.GetUsedCodes(It.IsAny<CancellationToken>()), Times.Once);
+            passwordRepo.Verify(c => c.GetUsedCodes(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
