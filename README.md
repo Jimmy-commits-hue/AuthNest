@@ -55,7 +55,6 @@ This project is a RESTful API built in .NET that provides authentication, secure
 - **Cookies**
 - **Anti-Forgery Token**
 - **Role Based Access Control (RBAC)**
-- **RazorLight**
 
 #### API Features
 - **Swagger**
@@ -64,6 +63,10 @@ This project is a RESTful API built in .NET that provides authentication, secure
 #### Logging
 - **Serilog**
 
+#### Others
+- **MailKit**
+- **RazorLight**
+  
 ---
 
 ## Features
