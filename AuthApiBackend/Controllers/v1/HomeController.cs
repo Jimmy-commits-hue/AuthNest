@@ -1,15 +1,12 @@
 ﻿using AuthApiBackend.DTOs;
-using AuthApiBackend.DTOs.ResponseDtos;
 using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Security;
-using Microsoft.AspNetCore.Authentication;
-using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
 
 namespace AuthApiBackend.Controllers.V1
 {
@@ -40,12 +37,20 @@ namespace AuthApiBackend.Controllers.V1
         }
 
         [HttpPost("login")]
-        public async Task<IActionResult> Login([FromBody] LoginDto user, ILoginOperation login, CancellationToken cancellationToken)
+        public async Task<IActionResult> Login([FromBody] LoginDto user, [FromServices] IAntiforgery antiToken, ILoginOperation login, CancellationToken cancellationToken)
         {
 
             await login.Login(user, cancellationToken);
 
-            return Ok("Logged in Successfully");
+            return Ok(new { Message = "Logged In Successfully"});
+        }
+
+        [HttpGet("csrf")]
+        public IActionResult GetCsrfToken([FromServices] IAntiforgery antiToken)
+        {
+            var tokens = antiToken.GetAndStoreTokens(HttpContext);
+     
+            return Ok(new { Message = tokens.RequestToken});
         }
 
         [HttpPost("resend-code")]
@@ -92,6 +97,7 @@ namespace AuthApiBackend.Controllers.V1
             return Ok(new { Message = "An email has been sent to ******@gmail.com" });
         }
 
+        [AutoValidateAntiforgeryToken]
         [DisableRateLimiting]
         [Authorize]
         [HttpPost("refresh-token")]
@@ -118,6 +124,7 @@ namespace AuthApiBackend.Controllers.V1
             return Ok(new { Message = "Token refreshed successfully" });
         }
 
+        [AutoValidateAntiforgeryToken]
         [DisableRateLimiting]
         [Authorize]
         [HttpPost("logout")]
