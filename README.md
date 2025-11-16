@@ -50,11 +50,12 @@ This project is a RESTful API built in .NET that provides authentication, secure
 #### Authentication and Security
 - **JWT Authentication**    
 - **Swagger**
-- **Rate limiting***
+- **Rate limiting**
 - **API Versioning**
 - **Cookies**
 - **Anti-Forgery Token**
 - **Role Based Access Control (RBAC)**
+- **RazorLight**
 
 #### API Features
 - **Swagger**
