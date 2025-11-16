@@ -63,6 +63,10 @@ This project is a RESTful API built in .NET that provides authentication, secure
 #### Logging
 - **Serilog**
 
+#### Testing
+- **Unit Testing (xUnit, Moq)**
+- **Postman**
+  
 #### Others
 - **MailKit**
 - **RazorLight**
