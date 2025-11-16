@@ -126,7 +126,6 @@ root/
 │   └── Program.cs
 │
 │── tests/
-│── .env
 │── .gitignore
 │── README.md
 │── unit_test.yml
