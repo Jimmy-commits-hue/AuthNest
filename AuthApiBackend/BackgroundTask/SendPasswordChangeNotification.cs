@@ -29,30 +29,41 @@ namespace AuthApiBackend.BackgroundTask
 
                     var tempCodeRepo = scope.ServiceProvider.GetRequiredService<ITemporaryPasswordService>();
 
-                    IEnumerable<ResetPasswordResponse>? pendingPasswords = await tempCodeRepo.GetAllPendingPasswords(stoppingToken);
-                    var emailService = scope.ServiceProvider.GetRequiredService<INotification>();
+                    var numberOfPendingPasswords = await tempCodeRepo.NumberOfPendingPasswords(stoppingToken);
 
-                    if (pendingPasswords is not null)
+                    var totalRounds = numberOfPendingPasswords / 10;
+
+                    var round = 0;
+
+                    while (totalRounds >= round)
                     {
+                        IEnumerable<ResetPasswordResponse>? pendingPasswords = await tempCodeRepo.GetAllPendingPasswords(round, stoppingToken);
+                        var emailService = scope.ServiceProvider.GetRequiredService<INotification>();
 
-                        foreach(var pendingPassword in pendingPasswords)
+                        if (pendingPasswords is not null)
                         {
 
-                            var notification = new NotificationDto
+                            foreach (var pendingPassword in pendingPasswords)
                             {
-                                TempPassword = EncryptData.Decrypt(pendingPassword.password),
-                                Subject = "Password Reset",
-                                VerificationLink = $"https://localhost:7123/api/v1/home/reset-verify?passwordId={pendingPassword.tempPasswordId}",
-                                TemplateName = "PasswordReset.cshtml",
-                                ToEmail = pendingPassword.email
-                            };
 
-                            await emailService.SendNotification(notification);
+                                var notification = new NotificationDto
+                                {
+                                    TempPassword = EncryptData.Decrypt(pendingPassword.password),
+                                    Subject = "Password Reset",
+                                    VerificationLink = $"https://localhost:7123/api/v1/home/reset-verify?passwordId={pendingPassword.tempPasswordId}",
+                                    TemplateName = "PasswordReset.cshtml",
+                                    ToEmail = pendingPassword.email
+                                };
 
-                            await tempCodeRepo.UpdatePasswordStatus(pendingPassword.tempPasswordId, stoppingToken);
+                                await emailService.SendNotification(notification);
+
+                                await tempCodeRepo.UpdatePasswordStatus(pendingPassword.tempPasswordId, stoppingToken);
+
+                            }
 
                         }
 
+                        round++;
                     }
 
                 }

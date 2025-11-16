@@ -26,22 +26,33 @@ namespace AuthApiBackend.BackgroundTask
                     var accountService = scope.ServiceProvider.GetRequiredService<IAccountService>();
                     var emailService = scope.ServiceProvider.GetRequiredService<INotification>();
 
-                    IEnumerable<LockedAccounts>? accountsToUnlock = await accountService.GetAllLockedAccounts(stoppingToken);
-                    
-                    if(accountsToUnlock is not null)
-                    {
-                        foreach(var account in accountsToUnlock)
-                        {
-                            var notification = new NotificationDto
-                            {
-                                ToEmail = account.Email,
-                                Subject = "Account Unlocked",
-                                TemplateName = "UnlockAccount.cshtml"
-                            };
+                    var numberOfLockedAccounts = await accountService.NumberOfLockedAccounts(stoppingToken);
 
-                            await emailService.SendNotification(notification);
-                            await accountService.UnlockAccount(account.accountId, stoppingToken);
+                    var totalRounds = numberOfLockedAccounts / 10;
+
+                    var round = 0;
+
+                    while (totalRounds >= round)
+                    {
+                        IEnumerable<LockedAccounts>? accountsToUnlock = await accountService.GetAllLockedAccounts(round, stoppingToken);
+
+                        if (accountsToUnlock is not null)
+                        {
+                            foreach (var account in accountsToUnlock)
+                            {
+                                var notification = new NotificationDto
+                                {
+                                    ToEmail = account.Email,
+                                    Subject = "Account Unlocked",
+                                    TemplateName = "UnlockAccount.cshtml"
+                                };
+
+                                await emailService.SendNotification(notification);
+                                await accountService.UnlockAccount(account.accountId, stoppingToken);
+                            }
                         }
+
+                        round++;
                     }
                 }
 

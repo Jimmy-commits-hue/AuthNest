@@ -1,5 +1,4 @@
-﻿using Microsoft.CodeAnalysis.CSharp.Syntax;
-using System.Security.Cryptography;
+﻿using System.Security.Cryptography;
 using System.Text;
 
 namespace AuthApiBackend.Utilities
@@ -9,15 +8,12 @@ namespace AuthApiBackend.Utilities
     {
 
         public static string Encrypt(string password)
-        {
-
-
+        { 
             using var aes = Aes.Create();
-            var key = Environment.GetEnvironmentVariable("AES_KEY")!;
 
+            var key = Environment.GetEnvironmentVariable("AES_KEY")!;
             aes.Key = Convert.FromBase64String(key);
 
-           
             aes.GenerateIV();
 
             using var ms = new MemoryStream();
@@ -27,19 +23,15 @@ namespace AuthApiBackend.Utilities
             using (var cryptoStream = new CryptoStream(ms, aes.CreateEncryptor(aes.Key, aes.IV), CryptoStreamMode.Write))
             using (var writer = new StreamWriter(cryptoStream, Encoding.UTF8))
             {
-
                 writer.Write(password);
-
             } 
 
             return Convert.ToBase64String(ms.ToArray());
-
         }
 
 
         public static string Decrypt(string cipherText)
         {
-
             byte[] fullCipher = Convert.FromBase64String(cipherText);
 
             using var aes = Aes.Create();
@@ -58,7 +50,6 @@ namespace AuthApiBackend.Utilities
             using var reader = new StreamReader(cryptoStream, Encoding.UTF8);
 
             return reader.ReadToEnd();
-
         }
 
     }

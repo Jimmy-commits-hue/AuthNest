@@ -8,7 +8,9 @@ namespace AuthApiBackend.Interfaces.IServices
     {
         Task CreateCodeAsync(string userId, CancellationToken cancellationToken, int attemptCount = 1);
 
-        Task<IEnumerable<PendingCode>?> GetPendingCodeAsync(CancellationToken cancellationToken);
+        Task<int> NumberOfPendingCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<PendingCode>?> GetPendingCodeAsync(int round, CancellationToken cancellationToken);
 
         Task RequestForCode(UserResponse userAttemptsAndUserId, CancellationToken cancellationToken);
 
@@ -18,10 +20,14 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task UpdateEmailSentAsync(string codeId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfExpiredCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> ExpiredVerificationCodes(int round, CancellationToken cancellationToken);
 
         Task RemoveCodes(VerificationCode code, CancellationToken cancellationToken);
 
-        Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfUsedCodes(CancellationToken cancellationToken);
+         
+        Task<IEnumerable<VerificationCode>?> RetrieveUsedCodes(int round, CancellationToken cancellationToken);
     }
 }

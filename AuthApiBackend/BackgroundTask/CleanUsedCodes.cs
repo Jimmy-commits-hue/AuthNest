@@ -1,5 +1,4 @@
-﻿
-using AuthApiBackend.Interfaces.IServices;
+﻿using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Models;
 
 namespace AuthApiBackend.BackgroundTask
@@ -25,28 +24,44 @@ namespace AuthApiBackend.BackgroundTask
                 {
                     var codeService = scope.ServiceProvider.GetRequiredService<IVerificationCodeService>();
 
+                    int NumberOfUsedVerificationCodes = await codeService.NumberOfUsedCodes(stoppingToken);
+
+                    int totalRoundsForUsedVerificationCodes = NumberOfUsedVerificationCodes / 10;
+
                     var tempPasswordService = scope.ServiceProvider.GetRequiredService<ITemporaryPasswordService>();
+                    
+                    int numberOfUsedTempCodes = await tempPasswordService.NumberOfUsedCodes(stoppingToken);
 
-                    IEnumerable<VerificationCode>? usedCode = await codeService.RetrieveUsedCodes(stoppingToken);
+                    int totalRoundsForUsedTempCodes = numberOfUsedTempCodes / 10;
 
-                    IEnumerable<TemporaryPassword>? usedTempCodes = await tempPasswordService.RetrieveUsedCodes(stoppingToken);
+                    int maxRounds = Math.Max(totalRoundsForUsedTempCodes, totalRoundsForUsedVerificationCodes);
+                    int round = 0;
 
-
-                    if (usedCode is not null)
+                    while (maxRounds >= round)
                     {
-                        foreach (var code in usedCode)
+
+                        IEnumerable<VerificationCode>? usedCode = await codeService.RetrieveUsedCodes(round, stoppingToken);
+
+                        IEnumerable<TemporaryPassword>? usedTempCodes = await tempPasswordService.RetrieveUsedCodes(round, stoppingToken);
+
+                        if (usedCode is not null)
                         {
-                            await codeService.RemoveCodes(code, stoppingToken);
+                            foreach (var code in usedCode)
+                            {
+                                await codeService.RemoveCodes(code, stoppingToken);
+                            }
+
                         }
 
-                    }
-
-                    if (usedTempCodes is not null)
-                    {
-                        foreach (var tempCode in usedTempCodes)
+                        if (usedTempCodes is not null)
                         {
-                            await tempPasswordService.RemoveCodes(tempCode, stoppingToken);
+                            foreach (var tempCode in usedTempCodes)
+                            {
+                                await tempPasswordService.RemoveCodes(tempCode, stoppingToken);
+                            }
                         }
+
+                        round++;
                     }
                 }
 

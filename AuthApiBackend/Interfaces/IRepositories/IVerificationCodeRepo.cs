@@ -11,7 +11,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task<VerificationResponse?> GetAsync(string codeId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<PendingCode>?> GetPendingCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfPendingCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<PendingCode>?> GetPendingCodes(int round,CancellationToken cancellationToken);
 
         Task<bool> IsUserEmailVerified(string userId, CancellationToken cancellationToken);
 
@@ -21,7 +23,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task UpdateActiveStatusAsync(string codeId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<VerificationCode>?> GetExpiredVericationCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfExpiredCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> GetExpiredVericationCodes(int round, CancellationToken cancellationToken);
 
         Task DeleteCodes(VerificationCode code, CancellationToken cancellationToken);
 
@@ -29,7 +33,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task DeactivateOldCode(string code, CancellationToken cancellationToken);
 
-        Task<IEnumerable<VerificationCode>?> GetAllUsedVerificationCodes(CancellationToken cancellationToken);
+        Task<int> NumberOfUsedVerificationCodes(CancellationToken cancellationToken);
+
+        Task<IEnumerable<VerificationCode>?> GetAllUsedVerificationCodes(int round, CancellationToken cancellationToken);
     }
 
 }

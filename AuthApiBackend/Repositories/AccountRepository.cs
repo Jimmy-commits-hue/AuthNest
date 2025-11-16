@@ -44,7 +44,8 @@ namespace AuthApiBackend.Repositories
 
             return await db.Account.AsNoTracking().
                          Where(a => a.AccountNumber.StartsWith(currentYearPrefix)).
-                         OrderByDescending(a => a.AccountNumber).Select(a => a.AccountNumber).
+                         OrderByDescending(a => a.AccountNumber).
+                         Select(a => a.AccountNumber).
                          FirstOrDefaultAsync(cancellationToken);
         }
 
@@ -61,10 +62,20 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken)
+        public async Task<int> GetNumberOfPendingAccounts(CancellationToken cancellationToken)
         {
             return await db.Account.AsNoTracking().
                          Where(a => a.Status == Enums.AccountStatus.Active && a.IsEmailSent == false).
+                         CountAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(int round, CancellationToken cancellationToken)
+        {
+            return await db.Account.AsNoTracking().
+                         Where(a => a.Status == Enums.AccountStatus.Active && a.IsEmailSent == false).
+                         OrderBy(a => a.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(p => new PendingAccountNumbers(
                                      p.AccountNumber!,
                                      p.User.ContactDetails!.Email,
@@ -199,10 +210,20 @@ namespace AuthApiBackend.Repositories
             await db.SaveChangesAsync(cancellationToken);
         }
 
-        public async Task<IEnumerable<LockedAccounts>?> GetLockedAccounts(CancellationToken cancellationToken)
+        public async Task<int> GetNumberOfLockedAccounts(CancellationToken cancellationToken)
         {
             return await db.Account.AsNoTracking().
                          Where(c => c.LockOutUntilDate <= DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         CountAsync(cancellationToken);
+        }
+
+        public async Task<IEnumerable<LockedAccounts>?> GetLockedAccounts(int round, CancellationToken cancellationToken)
+        {
+            return await db.Account.AsNoTracking().
+                         Where(c => c.LockOutUntilDate <= DateTimeOffset.UtcNow.ToUnixTimeSeconds()).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
                          Select(u => new LockedAccounts(
                                      u.Id,
                                      u.User.ContactDetails!.Email)).
@@ -236,13 +257,25 @@ namespace AuthApiBackend.Repositories
 
         }
 
-        public async Task<IEnumerable<User>?> GetAllDeletedAccounts(CancellationToken cancellationToken)
+        public async Task<int> GetNumberOfAccountsToDelete(CancellationToken cancellationToken)
         {
             long datetime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
 
             return await db.Account.AsNoTracking().
                          Where(u => u.ExpectedDeleteDate < datetime && u.Status == Enums.AccountStatus.Deleted).
-                         Select(u => u.User).ToListAsync(cancellationToken);
+                         CountAsync(cancellationToken);
+        }
+        public async Task<IEnumerable<User>?> GetAllDeletedAccounts(int round, CancellationToken cancellationToken)
+        {
+            long datetime = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+
+            return await db.Account.AsNoTracking().
+                         Where(u => u.ExpectedDeleteDate < datetime && u.Status == Enums.AccountStatus.Deleted).
+                         OrderBy(u => u.Id).
+                         Skip(round * 10).
+                         Take(10).
+                         Select(u => u.User).
+                         ToListAsync(cancellationToken);
         }
 
         public async Task<AccountResponse> GetAccountDetailsUponLogin(string accountdId, CancellationToken cancellationToken)

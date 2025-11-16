@@ -53,9 +53,14 @@ namespace AuthApiBackend.Services
             await passwordRepo.UpdateStatus(tempPasswordId, cancellationToken);
         }
 
-        public async Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(CancellationToken cancellationToken)
+        public async Task<int> NumberOfPendingPasswords(CancellationToken cancellationToken)
         {
-            return await passwordRepo.GetAllPendingPasswords(cancellationToken);
+            return await passwordRepo.NumberOfPendingPasswords(cancellationToken);
+        }
+
+        public async Task<IEnumerable<ResetPasswordResponse>?> GetAllPendingPasswords(int round, CancellationToken cancellationToken)
+        {
+            return await passwordRepo.GetAllPendingPasswords(round, cancellationToken);
         }
 
         public async Task<int> CheckAttemptNumber(string accountId, CancellationToken cancellationToken)
@@ -82,14 +87,24 @@ namespace AuthApiBackend.Services
             return attemptCount + 1;
         }
 
-        public async Task<IEnumerable<TemporaryPassword>?> RetrieveExpiredCodes(CancellationToken cancellationToken)
+        public async Task<int> NumberOfExpiredTempCodes(CancellationToken cancellationToken)
         {
-            return await passwordRepo.GetExpiredCodes(cancellationToken);
+            return await passwordRepo.CountExpiredTempCodes(cancellationToken);
         }
 
-        public async Task<IEnumerable<TemporaryPassword>?> RetrieveUsedCodes(CancellationToken cancellationToken)
+        public async Task<IEnumerable<TemporaryPassword>?> RetrieveExpiredCodes(int rounds, CancellationToken cancellationToken)
         {
-            return await passwordRepo.GetUsedCodes(cancellationToken);
+            return await passwordRepo.GetExpiredCodes(rounds,cancellationToken);
+        }
+
+        public async Task<int> NumberOfUsedCodes(CancellationToken cancellationToken)
+        {
+            return await passwordRepo.CountUsedCodes(cancellationToken);
+        }
+
+        public async Task<IEnumerable<TemporaryPassword>?> RetrieveUsedCodes(int round, CancellationToken cancellationToken)
+        {
+            return await passwordRepo.GetUsedCodes(round, cancellationToken);
         }
 
         public async Task RemoveCodes(TemporaryPassword code, CancellationToken cancellationToken)

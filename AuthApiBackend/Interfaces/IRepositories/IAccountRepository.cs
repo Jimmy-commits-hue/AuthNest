@@ -13,7 +13,9 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task<string?> GetLastAccountNumberAsync(CancellationToken cancellationToken);
 
-        Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken);
+        Task<int> GetNumberOfPendingAccounts(CancellationToken cancellationToken);
+
+        Task<IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(int round, CancellationToken cancellationToken);
 
         Task<AccountResponse> GetAccountDetailsUponLogin(string accountdId, CancellationToken cancellationToken);
 
@@ -41,12 +43,16 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task UpdatePassword(string accountId, string NewPassword, CancellationToken cancellationToken);
 
-        Task<IEnumerable<LockedAccounts>?> GetLockedAccounts(CancellationToken cancellationToken);
+        Task<int> GetNumberOfLockedAccounts(CancellationToken cancellationToken);
+
+        Task<IEnumerable<LockedAccounts>?> GetLockedAccounts(int round, CancellationToken cancellationToken);
 
         Task UnlockAccount(string accountId, CancellationToken cancellationToken);
 
         Task UpdateDeleteStatus(string accountId, CancellationToken cancellationToken);
 
-        Task<IEnumerable<User>?> GetAllDeletedAccounts(CancellationToken cancellationToken);
+        Task<int> GetNumberOfAccountsToDelete(CancellationToken cancellationToken);
+
+        Task<IEnumerable<User>?> GetAllDeletedAccounts(int round, CancellationToken cancellationToken);
     }
 }

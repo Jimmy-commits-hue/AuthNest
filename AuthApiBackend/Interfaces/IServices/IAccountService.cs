@@ -10,7 +10,11 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task UpdateAccountNumber(string userId, CancellationToken cancellationToken);
 
-        Task <IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(CancellationToken cancellationToken);
+        Task<int> GetNumberOfPendingAccounts(CancellationToken cancellationToken);
+
+        Task <IEnumerable<PendingAccountNumbers>?> GetPendingAccounts(int round, CancellationToken cancellationToken);
+
+        Task<int> NumberOfAccountsToDelete(CancellationToken cancellationToken);
 
         Task UpdateIsEmailSent(string accountId, CancellationToken cancellationToken);
 
@@ -33,7 +37,9 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task ResetPassword(string userId, string password, CancellationToken cancellationToken);
 
-        Task<IEnumerable<LockedAccounts>?> GetAllLockedAccounts(CancellationToken cancellationToken);
+        Task<int> NumberOfLockedAccounts(CancellationToken cancellationToken);
+
+        Task<IEnumerable<LockedAccounts>?> GetAllLockedAccounts(int round, CancellationToken cancellationToken);
 
         Task DisableAccount(string loginNumber, CancellationToken cancellationToken);
 
@@ -43,6 +49,6 @@ namespace AuthApiBackend.Interfaces.IServices
 
         Task ScheduleAccountForDeletion(string loginNumber, CancellationToken cancellationToken);
 
-        Task<IEnumerable<User>?> GetAllDeletedAccounts(CancellationToken cancellationToken);
+        Task<IEnumerable<User>?> GetAllDeletedAccounts(int round, CancellationToken cancellationToken);
     }
 }

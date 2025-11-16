@@ -26,14 +26,26 @@ namespace AuthApiBackend.BackgroundTask
                     var accountService = scope.ServiceProvider.GetRequiredService<IAccountService>();
                     var userService = scope.ServiceProvider.GetRequiredService<IUserService>();
 
-                    IEnumerable<User>? permanentDeleteAccounts = await accountService.GetAllDeletedAccounts(stoppingToken);
+                    var NumberOfAccounts = await accountService.NumberOfAccountsToDelete(stoppingToken);
 
-                    if (permanentDeleteAccounts?.Count() != 0)
+                    var roundsToMake = NumberOfAccounts / 10;
+
+                    var round = 0;
+
+                    while (round <= roundsToMake)
                     {
-                        foreach(var user in permanentDeleteAccounts!)
+
+                        IEnumerable<User>? permanentDeleteAccounts = await accountService.GetAllDeletedAccounts(round, stoppingToken);
+
+                        if (permanentDeleteAccounts?.Count() != 0)
                         {
-                            await userService.DeleteUser(user, stoppingToken);
+                            foreach (var user in permanentDeleteAccounts!)
+                            {
+                                await userService.DeleteUser(user, stoppingToken);
+                            }
                         }
+
+                        round++;
                     }
                 }
 

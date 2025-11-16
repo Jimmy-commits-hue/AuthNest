@@ -9,7 +9,6 @@ namespace AuthApiBackend.BackgroundTask
     
     public class SendAccountNumberNotification : BackgroundService
     {
-
         private readonly IServiceProvider serviceProvider;
         private readonly TimeSpan timer = TimeSpan.FromMinutes(1);
         private readonly ILogger<SendAccountNumberNotification> logger;
@@ -37,41 +36,51 @@ namespace AuthApiBackend.BackgroundTask
                         var accountService = Scope.ServiceProvider.GetRequiredService<IAccountService>();
                         var emailService = Scope.ServiceProvider.GetRequiredService<INotification>();
 
-                        IEnumerable<PendingAccountNumbers>? accountNumbers = await accountService.GetPendingAccounts(stoppingToken);
+                        int numberOfPendingAccounts = await accountService.GetNumberOfPendingAccounts(stoppingToken);
 
-                        if (accountNumbers is not null)
+                        int totalRounds = numberOfPendingAccounts / 10;
+
+                        int round = 0;
+
+                        while (totalRounds >= round)
                         {
+                            IEnumerable<PendingAccountNumbers>? accountNumbers = await accountService.GetPendingAccounts(round, stoppingToken);
 
-                            foreach (var account in accountNumbers)
+                            if (accountNumbers is not null)
                             {
 
-                                using (LogContext.PushProperty("UserId", account.AccountId))
+                                foreach (var account in accountNumbers)
                                 {
 
-                                    try
+                                    using (LogContext.PushProperty("UserId", account.AccountId))
                                     {
 
-                                        logger.LogInformation("Sending account number for {UserId} to {Email}", account.AccountId, account.Email);
-
-                                        var notification = new NotificationDto
+                                        try
                                         {
-                                            AccountNumber = account.AccountNumber,
-                                            Subject = "Allocated Account Number",
-                                            ToEmail = account.Email!,
-                                            TemplateName = "AccountNumber.cshtml"
-                                        };
 
-                                        await emailService.SendNotification(notification);
-                                        await accountService.UpdateIsEmailSent(account.AccountId, stoppingToken);
+                                            logger.LogInformation("Sending account number for {UserId} to {Email}", account.AccountId, account.Email);
 
-                                        logger.LogInformation("Account number for {UserId} was sent successfully", account.AccountId);
+                                            var notification = new NotificationDto
+                                            {
+                                                AccountNumber = account.AccountNumber,
+                                                Subject = "Allocated Account Number",
+                                                ToEmail = account.Email!,
+                                                TemplateName = "AccountNumber.cshtml"
+                                            };
 
-                                    }
-                                    catch (Exception ex)
-                                    {
+                                            await emailService.SendNotification(notification);
+                                            await accountService.UpdateIsEmailSent(account.AccountId, stoppingToken);
 
-                                        logger.LogError(ex, "An Error Occurred when trying to send an \"AccountNumber\" for {UserId} to {ToEmail}",
-                                            account.AccountId, account.Email);
+                                            logger.LogInformation("Account number for {UserId} was sent successfully", account.AccountId);
+
+                                        }
+                                        catch (Exception ex)
+                                        {
+
+                                            logger.LogError(ex, "An Error Occurred when trying to send an \"AccountNumber\" for {UserId} to {ToEmail}",
+                                                account.AccountId, account.Email);
+
+                                        }
 
                                     }
 
@@ -79,6 +88,7 @@ namespace AuthApiBackend.BackgroundTask
 
                             }
 
+                            round++;
                         }
 
                     }
