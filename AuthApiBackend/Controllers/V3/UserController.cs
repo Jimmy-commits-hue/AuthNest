@@ -1,25 +1,30 @@
 ﻿using AuthApiBackend.DTOs;
 using AuthApiBackend.Interfaces.IOperations;
 using AuthApiBackend.Interfaces.IServices;
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
+using System.Threading.Tasks;
 
 
 namespace AuthApiBackend.Controllers.V3
 {
-
     [Authorize(Policy = "User")]
     [Route("api/v{version:apiversion}/[controller]")]
     [ApiController]
     [EnableRateLimiting("AfterLogin")]
-    public class UserController : ControllerBase
+    public class UserController(IAntiforgery antiforgery) : ControllerBase
     {
 
+        private readonly IAntiforgery antiForgery = antiforgery;
+
         [HttpGet("welcome")]
-        public IActionResult UserDashboard()
+        public async Task<IActionResult> UserDashboard()
         {
+            await antiForgery.ValidateRequestAsync(HttpContext);
+
             return Ok("Welcome");
         }
 

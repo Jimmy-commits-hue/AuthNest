@@ -39,19 +39,43 @@ namespace AuthApiBackend.RegisterServices
                 });
 
 
-                options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                In = ParameterLocation.Cookie
-            },
-            new string[] {}
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                               Type = ReferenceType.SecurityScheme,
+                               Id = "Bearer"
+                            },
+                            In = ParameterLocation.Cookie
+                        },
+                        new string[] {}
+                    }
+                });
+
+                options.AddSecurityDefinition("CSRF", new OpenApiSecurityScheme
+                {
+                    Name = "X-CSRF-TOKEN",
+                    In = ParameterLocation.Header,
+                    Type = SecuritySchemeType.ApiKey,
+                    Description = "X-CSRF-Token ",
+                });
+
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                               Type = ReferenceType.SecurityScheme,
+                               Id = "CSRF"
+                            },
+                            In = ParameterLocation.Header
+                        },
+                        new string[] {}
                     }
                 });
             });

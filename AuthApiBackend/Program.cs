@@ -5,6 +5,7 @@ using AuthApiBackend.RegisterServices;
 using AuthApiBackend.Security;
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Serilog;
 using Serilog.Events;
@@ -64,6 +65,11 @@ try
         {
             policy.RequireRole("User");
         });
+    });
+
+    builder.Services.AddAntiforgery(options =>
+    {
+        options.HeaderName = "X-CSRF-TOKEN";
     });
 
     builder.Services.AddRateLimiter(options =>
