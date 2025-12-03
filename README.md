@@ -277,6 +277,7 @@ INSERT INTO Role(RoleName)Values("User");
 - Then after you can proceed else no user will be able to register
 
 ### Default ports in launchsettings.json:
+- Open browser and paste any of the following:
 
 ```json
 "ASPNETCORE_URLS": "https://localhost:7123;http://localhost:5267"
@@ -336,18 +337,21 @@ docker compose --env-file .env up -d --build
 docker ps
 ```
 
+- Ports
+  - Open browser and paste any of the following
+    
+  ```Ports
+     ASPNETCORE_HTTP=5000 (http://localhost:5000/swagger/index.html)
+     ASPNETCORE_HTTPS=5001 (https://localhost:5001/swagger/index.html)
+  ```
+
 - Stop containers:
   
 ```terminal
 docker compose down
 ```
 
-- Ports
-  
-  ```Ports
-     ASPNETCORE_HTTP=5000 (http://localhost:5000/swagger/index.html)
-     ASPNETCORE_HTTPS=5001 (https://localhost:5001/swagger/index.html)
-  ```
+
   
 - For more docker commands, [click me](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
   
