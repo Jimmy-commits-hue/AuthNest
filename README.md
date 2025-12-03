@@ -15,117 +15,163 @@ The project includes **API versioning**, advanced **Rate Limiting** mechanisms s
 For monitoring and observability, the system relies on **Serilog, with Seq and Console sinks** to provide structured logs, performance insights, and debugging support.
 
 ---
+Table of Contents
 
-## Table of Contents
+[About](#about)
 
-- [About](#about)
-- [Tech Stack](#tech-stack)
-- [Features](#features)
-- [Project Structure](#project-structure)
-- [.Env Configuration](#env-configuration)
-- [Clone And Setup](#clone-and-setup)
-- [Install Dependencies](#restore-dependencies)
-- [Create And Apply Migrations](#create-and-apply-migrations)
-- [Run Project](#run-the-project)
-- [Run Test](#run-test)
+[Tech Stack](#tech-stack)
+
+[Features](#features)
+
+[Project Structure](#project-structure)
+
+[Environment Variable](#enviromental-variables)
+
+[Clone the repository](#clone-the-repository)
+
+[Running Inside Docker](#running-inside-docker)
+
+[Running Outside Docker](#running-outside-docker)
+
+[Testing](#run-test)
+
+[Contact](#contact)
 
 ---
 
 ## About
 
-This project is a RESTful API built in .NET that provides authentication, secure data access, and CRUD endpoints. It follows clean architecture principles and includes JWT authentication, logging, and error handling.
+A RESTful API built in .NET providing authentication, secure data access, and CRUD endpoints. Follows clean architecture principles with JWT authentication, logging, and error handling.
 
 ---
-
 ## Tech Stack
 
-#### Language and Runtime
-- **C#**
-- **.NET 8**
+### Language and Runtime
 
-#### Database and ORM
-- **Entity Framework Core**  
-- **MySQL**
+- C#
 
-#### Authentication and Security
-- **JWT Authentication**    
-- **Swagger**
-- **Rate limiting**
-- **API Versioning**
-- **Cookies**
-- **Anti-Forgery Token**
-- **Role Based Access Control (RBAC)**
+- .NET 8
 
-#### API Features
-- **Swagger**
-- **API Versioning**
-  
-#### Logging
-- **Serilog**
+- Database and ORM
 
-#### Testing
-- **Unit Testing (xUnit, Moq)**
-- **Postman**
-  
-#### Others
-- **MailKit**
-- **RazorLight**
-  
----
+- Entity Framework Core
+
+- MySQL
+
+
+### Authentication & Security
+
+- JWT Authentication (Access & Refresh Tokens)
+
+- Rate limiting (Sliding Window & Token Bucket)
+
+- Role-Based Access Control (RBAC)
+
+- Anti-Forgery Tokens
+
+- Cookies
+
+### API Features
+
+- Swagger
+
+- API Versioning
+
+- Logging
+
+- Serilog (Console & Seq)
+
+### Testing
+
+- xUnit & Moq
+
+- Postman
+
+### Others
+
+- MailKit
+
+- RazorLight
+
+- Docker
+
+- Documentation (**Coming soon**)
 
 ## Features
 
-#### User and Admin Management
-- Admin can register a role
-- User can register, Login, Logout
-- User can Delete, Retrieve, Disable and Enable account
+### User and Admin Management
 
-#### Authentication and Security
-- Jwt Token Blacklisting on logout
-- Temporary Password Generation and Cleanup
-- Anti-Forgery Token ( Yet to implement)
+- Admin can register roles
+
+- User registration, login, logout
+
+- Account deletion, retrieval, disable/enable
+
+
+### Authentication & Security
+
+- JWT Token blacklisting on logout
+
+- Temporary password generation & cleanup
+
+- Anti-Forgery Token (planned)
+
 - Rate limiting
 
-#### Background Services
-- Automatic Email Sending
-- Scheduled Cleanup of Expired/Used codes
-- Scheduled Cleanup for Expired/Used Temporary Passwords
+- Background Services
 
-#### Databases and Infrastructure
-- Entity Framework Integration
-- MySql databases
+- Automatic email sending
 
-#### Architecture and Maintainability
-- Clean Architecture
-- Centralized logging and error handling
-- Configurable using environmental variables (`.env`)
+- Scheduled cleanup of expired/used codes & temporary passwords
 
----
+
+### Database & Infrastructure
+
+- EF Core integration
+
+- MySQL databases
+
+- Architecture & Maintainability
+
+- Clean architecture
+
+- Centralized logging & error handling
+
+- Configurable using (**.env**)
 
 ## Project Structure
-
 ```txt
-root/
-│── src/
-│   ├── BackgroundTask/
-│   ├── Configurations/
-│   ├── Controllers/
-│   ├── Database/
-│   ├── DTOs/
-│   ├── Enums/
-│   ├── Exceptions/
-│   ├── Interfaces/
-│   ├── Models/
-│   ├── RegisterServices/
-│   ├── Repositories/
-│   ├── Security/
-│   ├── Services/
-│   ├── Templates/
-│   ├── Utilities/
-│   ├── .env
-│   └── Program.cs
+AuthNest/
+│── .env                     # Root environment variables (DB_PASSWORD for Docker)
+│── docker/
+│   ├── Dockerfile
+│   └── docker-compose.yml
 │
-│── tests/
+│── 
+│   ├── AuthApiBackend/
+│   │   ├── .env              # API-specific environment variables (JWT, AES, Email, etc.)
+│   │   ├── BackgroundTask/
+│   │   ├── Configurations/
+│   │   ├── Controllers/
+│   │   ├── Database/
+│   │   ├── DTOs/
+│   │   ├── Enums/
+│   │   ├── Exceptions/
+│   │   ├── Interfaces/
+│   │   ├── Models/
+│   │   ├── RegisterServices/
+│   │   ├── Repositories/
+│   │   ├── Security/
+│   │   ├── Services/
+│   │   ├── Templates/
+│   │   ├── Utilities/
+│   │   └── Program.cs
+│   │
+│   └── AuthApiBackendTest/
+│       ├── TestHelpers/
+│       ├── UnitTests/
+│       └── AuthApiBackendTest.csproj
+│
 │── .gitignore
 │── README.md
 │── unit_test.yml
@@ -133,90 +179,159 @@ root/
 ```
 ---
 
-## .Env Configuration
+## Enviromental Variables
 
-`.env` file contains sensitive environment variables required by the API.
-Below is the structure you should follow:
-
+- .env in root: mainly for Docker
+- Location: AuthNest/.env
+  
 ```txt
-#---DATABASE---
-DB_PASSWORD=yourpassword
-
-#---JWT---
-# Must be at least 32 bytes for strong HMACSHA256 security
-JWT_KEY=your-super-secretive-key(atleast 32 bytes)
-
-#---AES---
-# Must be EXACTLY 16 bytes for AES-128 encryption
-AES_KEY=your-super-secretive-key(16 bytes)
-
-#---EMAIL---
-EMAIL_PASSWORD=yourgmailpassword-notpersonalpassword
-FROM_EMAIL=youremail
-
+DB_PASSWORD=yourdbpassword
 ```
+
+- .env in AuthApiBackend/: contains API-specific sensitive keys (JWT_KEY, AES_KEY, EMAIL_PASSWORD, FROM_EMAIL).
+- Location: AuthNest/AuthApiBackend/.env
+  
+```txt
+JWT_KEY=your-super-secretive-key(atleast 32 bytes)
+AES_KEY=your-super-secretive-key(16 bytes)
+FROM_EMAIL=youremail
+EMAIL_PASSWORD=yourinappgmailpassword-not-your-true-personal-password
+```
+
+- Docker files are under docker/ for easier maintenance.
+
 ---
 
-## Clone And Setup
+## Clone the Repository
 
-#### Clone the repository
 ```bash
 git clone https://github.com/Jimmy-commits-hue/AuthNest.git
-```
-
-#### Navigate into the project
-```bash
 cd AuthNest
 ```
+
 ---
+
+## Running Outside Docker
+
+### Prerequisites
+- [Visual Studio 2022 or later: Download](https://visualstudio.microsoft.com/downloads/)
+
+- .NET 8 SDK installed
+
+### Environment Variable
+
+#### **Create .env files:**
+- [See-> AuthNest\AuthApiBackend\.env](#enviromental-variables)
+
 
 ## Restore Dependencies
-#### Restoring both project dependencies
-```bash
-- dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.sln
-```
 
-#---Note--
-- This will restore dependencies in both project (API project and API tests project)
-
-#### Restore only API Project dependencies
-```bash
-- dotnet restore AuthNest/AuthApiBackend/AuthApiBackend.csproj
-```
-
-#---Note---
-- This will restore only dependencies for API project
+- Navigate to **..\AuthNest**
   
+### All projects:
+
+```terminal
+dotnet restore AuthApiBackend.sln
+```
 ---
 
-## Create And Apply Migrations
-```bash
-- dotnet ef migrations add "Initial"
-- dotnet ef database update
-```
+### API project only:
 
+```terminal
+dotnet restore AuthApiBackend/AuthApiBackend.csproj
+```
 ---
 
-## Run the Project
-```bash
-- dotnet run
-```
+### Run API
 
-#### Usage
-- After running the project, open browser and paste any of ASPNETCORE_URLS in launchsettings.json 
- 
-##### Ports
-- To run the project on different ports, please change "ASPNETCORE_URLS" environmental variables in launchsettings.json file.
-- ###### Default Ports
+```terminal
+dotnet run --project AuthApiBackend/AuthApiBackend.csproj
+```
+---
+
+### Default ports in launchsettings.json:
+
 ```json
-  - ASPNETCORE_URLS: "https://localhost:7123;http://localhost:5267"
+"ASPNETCORE_URLS": "https://localhost:7123;http://localhost:5267"
+```
+---
+
+## Running Inside Docker
+
+- Install Docker Desktop: [Download](https://docs.docker.com/desktop/)
+
+- Check if docker was installed successfully
+  
+  ```powershell
+   docker --version
+  ```
+  
+- Ensure WSL installed on Windows:
+  
+```powershell
+wsl --version
 ```
 
----
+- If not installed:
+  
+```powershell
+wsl install
+```
+
+- Start docker-desktop
+  
+- Navigate to project root:
+  
+```terminal
+cd AuthNest
+```
+
+- Create .env in root (AuthNest\.env) and in src\AuthApiBackend\.env (JWT, AES, Email). [Click me](#enviromental-variables)
+
+- Build and start containers in detached mode:
+```terminal
+docker compose --env-file .env up -d --build
+```
+
+- Check running containers:
+  
+```terminal
+docker ps
+```
+
+- Stop containers:
+  
+```terminal
+docker compose down
+```
+
+- Ports
+  
+  ```Ports
+     ASPNETCORE_HTTP=5000 (http://localhost:5000/swagger/index.html)
+     ASPNETCORE_HTTPS=5001 (https://localhost:5001/swagger/index.html)
+  ```
+  
+- For more docker commands, [click me](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
+  
+--- 
 
 ## Run Test
-```bash
-- dotnet test
+
+---
+Prerequisite
+- Create .env file (AuthNest\AuthApiBackend\.env): [See this](#enviromental-variables)
+  
+```terminal
+cd AuthNest
+dotnet test AuthApiBackendTest/AuthApiBackendTest.csproj
 ```
 
+---
+
+## Contact
+
+- Author: Khabana Jabulani Jimmy
+- [Email Me](jabulanikhabana0@gmail.com)
+ 
 ---
