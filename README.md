@@ -373,6 +373,6 @@ dotnet test AuthApiBackendTest/AuthApiBackendTest.csproj
 ## Contact
 
 - Author: Khabana Jabulani Jimmy
-- [Email](mailto:jabulanikhabana0@gmail.com)
+- [Press this link to Email me](mailto:jabulanikhabana0@gmail.com)
  
 ---
