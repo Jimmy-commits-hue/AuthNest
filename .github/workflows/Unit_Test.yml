@@ -65,7 +65,7 @@ jobs:
             --logger "trx;LogFileName=test_results.trx"
 
       - name: Publish Unit Test results to PR
-        uses: EnricoMi/publish-unit-test-results@v2
+        uses: EnricoMi/publish-unit-test-result-action@v2
         if: always()
         with:
           files: "TestResults/**/*.trx"
