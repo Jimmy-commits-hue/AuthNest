@@ -141,40 +141,59 @@ A RESTful API built in .NET providing authentication, secure data access, and CR
 
 ## Project Structure
 ```txt
-AuthNest/
-│── .env                     # Root environment variables (DB_PASSWORD for Docker)
-│── docker/
-│   ├── Dockerfile
-│   └── docker-compose.yml
-│
-│── 
-│   ├── AuthApiBackend/
-│   │   ├── .env              # API-specific environment variables (JWT, AES, Email, etc.)
-│   │   ├── BackgroundTask/
-│   │   ├── Configurations/
-│   │   ├── Controllers/
-│   │   ├── Database/
-│   │   ├── DTOs/
-│   │   ├── Enums/
-│   │   ├── Exceptions/
-│   │   ├── Interfaces/
-│   │   ├── Models/
-│   │   ├── RegisterServices/
-│   │   ├── Repositories/
-│   │   ├── Security/
-│   │   ├── Services/
-│   │   ├── Templates/
-│   │   ├── Utilities/
-│   │   └── Program.cs
-│   │
-│   └── AuthApiBackendTest/
-│       ├── TestHelpers/
-│       ├── UnitTests/
-│       └── AuthApiBackendTest.csproj
-│
-│── .gitignore
-│── README.md
-│── unit_test.yml
+AuthNest\
+|-- .git\                     
+|-- .github\
+|
+|-- 
+|  |-- AuthApiBackend\
+|  |  |-- Connected Services\             
+|  |  |-- Dependencies\
+|  |  |-- Imports\
+|  |  |-- BackgroundTask\
+|  |  |-- Configurations\
+|  |  |-- Controllers\
+|  |  |-- Database\
+|  |  |-- DTOs\
+|  |  |-- Enums\
+|  |  |-- Exceptions\
+|  |  |-- Interfaces\
+|  |  |-- Migrations\
+|  |  |-- Models\
+|  |  |-- RegisterService\
+|  |  |-- Repositories\
+|  |  |-- Security\
+|  |  |-- Services\
+|  |  |-- Templates\
+|  |  |-- Utilities\
+|  |  |-- .env                             # API-specific environment variables (JWT, AES, Email, etc.)
+|  |  |-- appsettings.json
+|  |  |-- Dockerfile\
+|  |  |__ Program.cs
+|  |
+|  |__ AuthApiBackendTest\
+|       |-- Dependencies\
+|       |-- AccountServiceTests.cs\
+|       |-- BlackListedTokenTest.cs\
+|       |-- ContactDetailsTest.sc\
+|       |-- EnvCollection.cs\
+|       |-- EnvFixture.cs\
+|       |-- RefreshTokenTest.cs\
+|       |-- RoleServiceTest.cs\
+|       |-- TemporaryPasswordTest.cs\
+|       |-- UserRoleServiceTest.cs\
+|       |-- UserServiceTest.cs\
+|       |-- VerificationCodeTest.cs\
+|       └── AuthApiBackendTest.csproj
+|
+|-- .env                 # Root environment variables (DB_PASSWORD for Docker)
+|-- .gitignore
+|-- AuthAPiBackend.sln
+|-- docker-compose.dproj
+|-- docker-compose.override.yml
+|-- docker-compose.yml
+|-- launchsettings.json
+|__ README.md
 
 ```
 ---
