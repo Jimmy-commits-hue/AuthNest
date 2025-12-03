@@ -23,7 +23,7 @@ namespace AuthApiBackend.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     TokenId = table.Column<string>(type: "longtext", nullable: true)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    ExpiresIn = table.Column<long>(type: "bigint", nullable: true)
+                    ExpiresIn = table.Column<long>(type: "bigint", nullable: false)
                 },
                 constraints: table =>
                 {

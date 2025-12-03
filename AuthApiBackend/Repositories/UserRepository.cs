@@ -28,6 +28,13 @@ namespace AuthApiBackend.Repositories
                                      OrderByDescending(c => c.AttemptCount).
                                      Select(c => c.AttemptCount).First())).
                          FirstOrDefaultAsync(cancellationToken);
+
+           
+        }
+
+        public async Task<bool> GetUser(string idNumber, CancellationToken cancellationToken)
+        {
+            return await db.User.AnyAsync(c => c.IdNumber == idNumber, cancellationToken);
         }
 
         public async Task UpdateAsync(User user, CancellationToken cancellationToken)

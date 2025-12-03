@@ -23,7 +23,7 @@ namespace AuthApiBackend.Services
             {
 
                 RoleName = roleFormat,
-
+                
             }, cancellationToken);
 
         }

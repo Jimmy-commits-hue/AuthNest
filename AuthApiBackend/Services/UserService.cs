@@ -17,9 +17,9 @@ namespace AuthApiBackend.Services
         {
             var IdNumber = HashHelper.HashId(user.IdNumber);
 
-            var userExist = await userRepo.GetAsync(IdNumber, cancellationToken);
+            var userExist = await userRepo.GetUser(IdNumber, cancellationToken);
 
-            if (userExist is not null)
+            if (userExist is true)
                 throw new UserAlreadyExistException("User already exist");
 
             var newUser = new User

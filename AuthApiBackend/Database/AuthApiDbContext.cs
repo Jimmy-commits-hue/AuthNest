@@ -26,28 +26,73 @@ namespace AuthApiBackend.Database
 
             public DbSet<BlackListedToken> BlackListedToken { get; set; }
 
-            private readonly DatabaseSettings _settings;
+           private readonly DatabaseSettings _settings;
 
             public AuthApiDbContext(IOptions<DatabaseSettings> options)
             {
                 _settings = options.Value;
             }
 
-            protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
+        {
+            if (!optionsBuilder.IsConfigured)
             {
-                if (!optionsBuilder.IsConfigured)
+
+                int retryCount = 5;
+                string connectionString = string.Empty;
+                while (retryCount > 0)
                 {
-                    string Password = Environment.GetEnvironmentVariable("DB_PASSWORD")!;
-                    string password = Password.Split('\\')[1];
 
-                    string connectionString = $"Server={_settings.Server};Port={_settings.Port};User={_settings.User};" +
-                        $"Database={_settings.Database};Password={password};";
+                    try
+                    {
+                        string Password = Environment.GetEnvironmentVariable("DB_PASS")!;
+                        string password = string.Empty;
 
-                    optionsBuilder.UseMySql(connectionString, MySqlServerVersion.AutoDetect(connectionString));
+                        if (string.IsNullOrEmpty(Password) || Password.Contains('\\'))
+                        {
+                            Password = Environment.GetEnvironmentVariable("DB_PASSWORD")!;
+                            password = Password.Split('\\')[1];
+                        }
+                        else
+                        {
+                            password = Password;
+                        }
 
-                    base.OnConfiguring(optionsBuilder);
+                        string Server = Environment.GetEnvironmentVariable("DB_SERVER") ?? _settings.Server;
+                        string Port = Environment.GetEnvironmentVariable("DB_PORT") ?? _settings.Port;
+                        string Database = Environment.GetEnvironmentVariable("DB_DATABASE") ?? _settings.Database;
+                        string User = Environment.GetEnvironmentVariable("DB_USER") ?? _settings.User;
+                        Console.WriteLine("Password + +++: " + Password + " " + Server + " " + Port + " " +
+                            Database + " " + User);
+                        connectionString = $"Server={Server};Port={Port};Database={Database};User={User};Password={password};";
+                        break;
+                    }
+                    catch
+                    {
+                        throw new Exception("Database connection failed");
+                    }
                 }
+
+
+
+
+                optionsBuilder.UseMySql(
+                    connectionString,
+                    MySqlServerVersion.AutoDetect(connectionString),
+                    mySqlOptions => mySqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 10,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
+                        errorNumbersToAdd: null
+                    )
+                );
+
+                Console.WriteLine("Successfully connected to the database.");
+                base.OnConfiguring(optionsBuilder);
+                Console.WriteLine("Successfully connected to the database 2");
+            } 
             }
+            
+          // public AuthApiDbContext(DbContextOptions<AuthApiDbContext> options) : base(options) { }
 
             protected override void OnModelCreating(ModelBuilder modelBuilder)
             {
