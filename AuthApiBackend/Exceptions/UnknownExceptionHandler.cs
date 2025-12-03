@@ -29,7 +29,7 @@ namespace AuthApiBackend.Exceptions
 
             await httpContext.Response.WriteAsJsonAsync(response, cancellationToken);
 
-            log.LogError("Unknown Exception was thrown {Exception}", exception);
+            log.LogError("Unknown Exception was thrown {Exception} , {Method}", exception, exception.TargetSite);
 
             return true;
 

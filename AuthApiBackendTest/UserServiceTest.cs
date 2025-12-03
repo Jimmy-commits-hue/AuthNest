@@ -1,14 +1,11 @@
 using Moq;
 using AuthApiBackend.Services;
 using AuthApiBackend.Models;
-using AuthApiBackend.Utilities;
 using AuthApiBackend.DTOs;
 using AuthApiBackend.Exceptions.ExceptionTypes;
 using AuthApiBackend.Interfaces.IRepositories;
 using AuthApiBackend.DTOs.ResponseDtos;
-using Org.BouncyCastle.Crypto.Prng;
 using Microsoft.AspNetCore.JsonPatch;
-using Microsoft.AspNetCore.Mvc;
 
 namespace AuthApiBackendTest
 {
@@ -31,6 +28,9 @@ namespace AuthApiBackendTest
         {
             var fakeDb = new List<User>();
 
+            userRepo.Setup(userRepo => userRepo.GetUser(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(false);
+
             userRepo.Setup(userRepo => userRepo.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>())).
                      Callback<User, CancellationToken>((user, cancellationToken) =>
                      {
@@ -51,18 +51,14 @@ namespace AuthApiBackendTest
             Assert.Single(fakeDb);
 
             userRepo.Verify(userRepo => userRepo.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Once);
+            userRepo.Verify(userRepo => userRepo.GetUser(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
         }
 
         [Fact]
         public async Task CreateUserAsync_ThrowsUserAlreadyExistException_IfUserExist()
         {
-            userRepo.Setup(userRepo => userRepo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>())).
-                     ReturnsAsync(new UserResponse
-                                      (
-                                        Guid.NewGuid().ToString(),
-                                        1
-                                      )
-                                 );
+            userRepo.Setup(userRepo => userRepo.GetUser(It.IsAny<string>(), It.IsAny<CancellationToken>())).
+                     ReturnsAsync(true);
 
             var registerUser = new RegisterDto
             {
@@ -74,7 +70,7 @@ namespace AuthApiBackendTest
             var ex = await Assert.ThrowsAnyAsync<UserAlreadyExistException>(async () =>
                      await userService.CreateUserAsync(registerUser, CancellationToken.None));
 
-            userRepo.Verify(userRepo => userRepo.GetAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
+            userRepo.Verify(userRepo => userRepo.GetUser(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Once);
             userRepo.Verify(userRepo => userRepo.CreateAsync(It.IsAny<User>(), It.IsAny<CancellationToken>()), Times.Never);
         }
 

@@ -757,7 +757,6 @@ namespace AuthApiBackendTest
 
             var lockedAccounts = await accountService.GetAllLockedAccounts(0, CancellationToken.None);
 
-
             #pragma warning disable CS8602
             Assert.IsType<LockedAccounts>(lockedAccounts.GetEnumerator().Current);
             #pragma warning restore CS8602 

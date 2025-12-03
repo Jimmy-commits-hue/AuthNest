@@ -5,17 +5,18 @@ using AuthApiBackend.RegisterServices;
 using AuthApiBackend.Security;
 using DotNetEnv;
 using Microsoft.AspNetCore.Diagnostics;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.EntityFrameworkCore;
 using Serilog;
 using Serilog.Events;
 using System.IdentityModel.Tokens.Jwt;
 using System.Threading.RateLimiting;
 
-Env.Load();
 
-Console.WriteLine(Environment.GetEnvironmentVariable("KEY"));
+
 var builder = WebApplication.CreateBuilder(args);
+
+Env.Load();
 
 Log.Logger = new LoggerConfiguration()
     .WriteTo.Console().WriteTo.Seq("http://localhost:5341")
@@ -24,7 +25,6 @@ Log.Logger = new LoggerConfiguration()
 
 try
 {
-
     builder.Host.UseSerilog((context, services, config) =>
     {
         config.ReadFrom.Configuration(context.Configuration).
@@ -40,8 +40,8 @@ try
 
     builder.Services.AddServiceCollection();
     builder.Services.AddVerifyJWT(builder.Configuration);
+    builder.Configuration.AddEnvironmentVariables();
 
-    //Binding appsettingsjson to Dtos
     builder.Services.Configure<DatabaseSettings>(builder.Configuration.GetRequiredSection("connectionString"));
     builder.Services.Configure<EmailConfig>(builder.Configuration.GetRequiredSection("EmailConfig"));
     builder.Services.Configure<MaxAttemptsConfig>(builder.Configuration.GetRequiredSection("MaxAttempts"));
@@ -146,6 +146,32 @@ try
 
     var app = builder.Build();
 
+    using (var scope = app.Services.CreateScope())
+    {
+        var db = (AuthApiDbContext)scope.ServiceProvider.GetRequiredService<AuthApiDbContext>();
+        var retryCount = 5;
+        Console.WriteLine("Applying database migrations...");
+        while (retryCount > 0)
+        {
+            try
+            {
+                db.Database.Migrate();
+                break;
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"DB not ready, retrying in 5 seconds...{ex.Message}");
+                Thread.Sleep(5000);
+                retryCount--;
+            }
+        }
+
+        if (!db.Database.CanConnect())
+        {
+            Environment.Exit(1);
+        }
+    }
+
     var provider = app.Services.GetRequiredService<IApiVersionDescriptionProvider>();
 
     if (app.Environment.IsDevelopment())
@@ -160,6 +186,7 @@ try
                     $"API {description.GroupName.ToUpperInvariant()}");
             }
         });
+
     }
 
     app.UseRateLimiter();
@@ -176,13 +203,9 @@ try
 }
 catch (Exception ex)
 {
-
     Log.Fatal("{Exception} was thrown", ex);
-
 }
 finally
 {
-
-    await Log.CloseAndFlushAsync();
-
+    Log.CloseAndFlush();
 }

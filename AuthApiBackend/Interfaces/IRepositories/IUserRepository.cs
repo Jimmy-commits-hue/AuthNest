@@ -24,6 +24,8 @@ namespace AuthApiBackend.Interfaces.IRepositories
 
         Task<string?> GetUserPkById(string nationalId, CancellationToken cancellationToken);
 
+        Task<bool> GetUser(string idNumber, CancellationToken cancellationToken);
+
         Task DeleteUser(User user, CancellationToken cancellationToken);
 
     }

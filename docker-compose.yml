@@ -1,0 +1,56 @@
+services:
+  authapibackend_db:
+    image: mysql:9.0.0
+    container_name: authapibackend_db
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_DATABASE: AuthApiDB
+      MYSQL_USER: authuser
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    volumes:
+      - authapibackend_db_data:/var/lib/mysql
+  
+    networks:
+      - authapi
+    
+  authapibackend:  
+    image: ${DOCKER_REGISTRY-}authapibackend
+    container_name: authapibackend_api
+    build:
+      context: AuthApiBackend
+      dockerfile: Dockerfile
+    environment:
+       - DB_SERVER=authapibackend_db
+       - DB_PORT=3306
+       - DB_DATABASE=AuthApiDB
+       - DB_USER=authuser
+       - DB_PASS=${DB_PASSWORD}
+    ports:
+      - "5000:8080"
+      - "5001:8081"
+    depends_on:
+      authapibackend_db:
+        condition: service_healthy
+    env_file:
+      - AuthApiBackend/.env
+    networks:
+      - authapi
+    restart: always
+
+  
+networks:
+   authapi:
+
+volumes:
+  authapibackend_db_data:
+  
+
+
+

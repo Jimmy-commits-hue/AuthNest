@@ -12,7 +12,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace AuthApiBackend.Migrations
 {
     [DbContext(typeof(AuthApiDbContext))]
-    [Migration("20251110112327_Initial")]
+    [Migration("20251122174004_Initial")]
     partial class Initial
     {
         /// <inheritdoc />
@@ -63,7 +63,7 @@ namespace AuthApiBackend.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("varchar(255)");
 
-                    b.Property<long?>("ExpiresIn")
+                    b.Property<long>("ExpiresIn")
                         .HasColumnType("bigint");
 
                     b.Property<string>("TokenId")

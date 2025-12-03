@@ -2,7 +2,6 @@
 using AuthApiBackend.Interfaces.IServices;
 using AuthApiBackend.Interfaces.IServices.ISendNotification;
 using AuthApiBackend.Utilities;
-using MimeKit.Tnef;
 using Serilog.Context;
 
 namespace AuthApiBackend.BackgroundTask
@@ -23,10 +22,10 @@ namespace AuthApiBackend.BackgroundTask
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-
+            
             using (LogContext.PushProperty("JobName", nameof(SendVerificationCodeNotification)))
             {
-
+                
                 while (!stoppingToken.IsCancellationRequested)
                 {
 
@@ -40,7 +39,7 @@ namespace AuthApiBackend.BackgroundTask
                         int numberOfTurns = (int)verificationCodeCount / 10;
                         int round = 0;
 
-                        while (numberOfTurns >= round)
+                        while (numberOfTurns >= round && verificationCodeCount > 0)
                         {
 
 
@@ -76,17 +75,20 @@ namespace AuthApiBackend.BackgroundTask
 
                                             };
 
-
-                                            await emailService.SendNotification(notification);
-
-                                            await codeService.UpdateEmailSentAsync(code.Id, stoppingToken);
+                                            try
+                                            {
+                                                await emailService.SendNotification(notification);
+                                            }catch(Exception ex)
+                                            {
+                                                Console.WriteLine(ex.Message);
+                                            }
+                                                await codeService.UpdateEmailSentAsync(code.Id, stoppingToken);
 
                                             logger.LogInformation("Code was sent successfully to {Email}", code.Email);
-
+                                            
                                         }
                                         catch (Exception ex)
                                         {
-
                                             logger.LogError(ex, "An error occurred when sending a code to {Email} {FirstName} {Surname}",
                                                 code.Email, code.FirstName, code.Surname);
 
