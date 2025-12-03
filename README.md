@@ -264,9 +264,17 @@ dotnet restore AuthApiBackend/AuthApiBackend.csproj
 ### Run API
 
 ```terminal
-dotnet run --project AuthApiBackend/AuthApiBackend.csproj
+dotnet run AuthApiBackend/AuthApiBackend.csproj
 ```
 ---
+
+### AFter running, Open Your Myql and follow the following commands
+```terminal
+USE authapidb;
+INSERT INTO Role(RoleName)Values("User");
+```
+
+- Then after you can proceed else no user will be able to register
 
 ### Default ports in launchsettings.json:
 
@@ -312,6 +320,16 @@ cd AuthNest
 docker compose --env-file .env up -d --build
 ```
 
+- Register role in the database before using it else no user will be able to register, follow the following commands:
+  ```bash
+  docker exec -it AuthApiDB mysql -u root -p
+  ```
+- After Enter your DB Password, Then follow the following commands:
+  ```terminal
+  USE AuthApiDB;
+  INSERT INTO RoleName(RoleName)Values("User");
+  ```
+  
 - Check running containers:
   
 ```terminal
