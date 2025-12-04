@@ -282,6 +282,10 @@ INSERT INTO Role(RoleName)Values("User");
 ```json
 "ASPNETCORE_URLS": "https://localhost:7123;http://localhost:5267"
 ```
+Or
+- Click any of the below after running the application in terminal:
+   - [Click me for http](http://localhost:5267/swagger/index.html)
+   - [Click me for https](https://localhost:7123/swagger/index.html)
 ---
 
 ## Running Inside Docker
@@ -289,10 +293,10 @@ INSERT INTO Role(RoleName)Values("User");
 - Install Docker Desktop: [Download](https://docs.docker.com/desktop/)
 
 - Check if docker was installed successfully
-  
-  ```powershell
-   docker --version
-  ```
+
+```powershell
+docker --version
+```
   
 - Ensure WSL installed on Windows:
   
@@ -322,37 +326,35 @@ docker compose --env-file .env up -d --build
 ```
 
 - Register role in the database before using it else no user will be able to register, follow the following commands:
-  ```bash
-  docker exec -it AuthApiDB mysql -u root -p
-  ```
+```bash
+docker exec -it AuthApiDB mysql -u root -p
+```
 - After Enter your DB Password, Then follow the following commands:
-  ```terminal
-  USE AuthApiDB;
-  INSERT INTO RoleName(RoleName)Values("User");
-  ```
+```terminal
+USE AuthApiDB;
+INSERT INTO RoleName(RoleName)Values("User");
+```
   
-- Check running containers:
-  
+- Check running containers:  
 ```terminal
 docker ps
 ```
 
 - Ports
   - Open browser and paste any of the following
-    
   ```Ports
      ASPNETCORE_HTTP=5000 (http://localhost:5000/swagger/index.html)
      ASPNETCORE_HTTPS=5001 (https://localhost:5001/swagger/index.html)
   ```
-
+  Or
+  - Click any of the following after running the application with docker-desktop
+    - [Click me for http](http://localhost:5000/swagger/index.html)
+    - [Click me for https](https://localhost:5001/swagger/index.html)
 - Stop containers:
   
 ```terminal
 docker compose down
 ```
-
-
-  
 - For more docker commands, [click me](https://docs.docker.com/get-started/docker_cheatsheet.pdf)
   
 --- 
